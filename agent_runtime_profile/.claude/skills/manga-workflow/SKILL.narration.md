@@ -118,6 +118,7 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 根据 `effective_mode(project, episode)` 选择 subagent：
 
 - `generation_mode == reference_video` → dispatch `split-reference-video-units`
+- `prompt_profile == "seedance"` → dispatch `split-narration-seedance`
 - 否则 → dispatch `split-narration-segments`
 
 dispatch prompt 通用参数：项目名称、项目路径、集数、本集小说文件路径。
@@ -133,7 +134,12 @@ dispatch prompt 通用参数：项目名称、项目路径、集数、本集小�
 
 **触发**：scripts/episode_{N}.json 不存在
 
-**dispatch `create-episode-script` subagent**：传入项目名称、项目路径、集数。
+根据 `prompt_profile` 选择 subagent：
+
+- `prompt_profile == "seedance"` → dispatch `create-seedance-script`
+- 否则 → dispatch `create-episode-script`
+
+传入项目名称、项目路径、集数。
 
 ---
 
