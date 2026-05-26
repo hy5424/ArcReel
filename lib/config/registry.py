@@ -503,6 +503,7 @@ PROVIDER_REGISTRY: dict[str, ProviderMeta] = {
         optional_keys=["video_max_workers", "image_max_workers"],
         secret_keys=[],
         models={
+            # --- 视频模型 ---
             "seedance2.0fast": ModelInfo(
                 display_name="Seedance 2.0 Fast",
                 media_type="video",
@@ -518,12 +519,63 @@ PROVIDER_REGISTRY: dict[str, ProviderMeta] = {
                 supported_durations=list(range(4, 16)),
                 resolutions=["720p"],
             ),
+            "seedance2.0_vip": ModelInfo(
+                display_name="Seedance 2.0 VIP",
+                media_type="video",
+                capabilities=["text_to_video", "image_to_video"],
+                supported_durations=list(range(4, 16)),
+                resolutions=["720p", "1080p"],
+            ),
+            "seedance2.0fast_vip": ModelInfo(
+                display_name="Seedance 2.0 Fast VIP",
+                media_type="video",
+                capabilities=["text_to_video", "image_to_video"],
+                supported_durations=list(range(4, 16)),
+                resolutions=["720p", "1080p"],
+            ),
+            # --- 图片模型 ---
+            "5.0": ModelInfo(
+                display_name="Dreamina 5.0",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                resolutions=["2K", "4K"],
+            ),
+            "4.6": ModelInfo(
+                display_name="Dreamina 4.6",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                resolutions=["2K", "4K"],
+            ),
             "4.5": ModelInfo(
                 display_name="Dreamina 4.5",
                 media_type="image",
                 capabilities=["text_to_image", "image_to_image"],
                 default=True,
                 resolutions=["2K", "4K"],
+            ),
+            "4.1": ModelInfo(
+                display_name="Dreamina 4.1",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                resolutions=["2K", "4K"],
+            ),
+            "4.0": ModelInfo(
+                display_name="Dreamina 4.0",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                resolutions=["2K", "4K"],
+            ),
+            "3.1": ModelInfo(
+                display_name="Dreamina 3.1",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                resolutions=["1K", "2K"],
+            ),
+            "3.0": ModelInfo(
+                display_name="Dreamina 3.0",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                resolutions=["1K", "2K"],
             ),
         },
     ),
