@@ -54,6 +54,18 @@ function renderHighlightedTokens(
         </span>
       );
     }
+    if (tk.kind === "seedance_position") {
+      return <span key={key} className="font-medium text-cyan-300 bg-cyan-500/10 rounded-sm px-0.5">{sliceText}</span>;
+    }
+    if (tk.kind === "seedance_forbidden") {
+      return <span key={key} className="font-medium text-rose-300 bg-rose-500/10 rounded-sm px-0.5">{sliceText}</span>;
+    }
+    if (tk.kind === "seedance_timeblock") {
+      return <span key={key} className="text-purple-200 bg-purple-500/10 rounded-sm px-0.5">{sliceText}</span>;
+    }
+    if (tk.kind === "seedance_meta") {
+      return <span key={key} className="text-orange-300/80 italic">{sliceText}</span>;
+    }
     return <span key={key}>{sliceText}</span>;
   };
 
