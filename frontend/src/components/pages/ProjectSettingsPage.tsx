@@ -123,7 +123,7 @@ export function ProjectSettingsPage() {
   const [aspectRatio, setAspectRatio] = useState<string>("");
   const [generationMode, setGenerationMode] = useState<GenerationMode>("storyboard");
   const [defaultDuration, setDefaultDuration] = useState<number | null>(null);
-  const [promptProfile, setPromptProfile] = useState<string>("standard");
+  const [promptProfile, setPromptProfile] = useState<"standard" | "seedance">("standard");
   const [videoResolution, setVideoResolution] = useState<string | null>(null);
   const [imageResolution, setImageResolution] = useState<string | null>(null);
   const [modelSettings, setModelSettings] = useState<Record<string, { resolution: string | null }>>({});
@@ -198,7 +198,8 @@ export function ProjectSettingsPage() {
       const ar = rawAr || "9:16";
       const gm = normalizeMode(project.generation_mode);
       const dd = project.default_duration != null ? (project.default_duration as number) : null;
-      const pp = (project.prompt_profile as string | undefined) ?? "standard";
+      const rawPP = project.prompt_profile as string | undefined;
+      const pp: "standard" | "seedance" = rawPP === "seedance" ? "seedance" : "standard";
 
       setVideoBackend(vb);
       setImageBackendT2I(ibt2i);
