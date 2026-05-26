@@ -120,6 +120,10 @@ class ConfigService:
             if has_active:
                 status: Literal["ready", "unconfigured", "error"] = "ready"
                 missing: list[str] = []
+            elif not meta.required_keys:
+                # 无需 API Key 的供应商（如 Dreamina OAuth），仅检查是否有模型注册
+                status = "ready" if meta.models else "unconfigured"
+                missing = []
             else:
                 status = "unconfigured"
                 missing = list(meta.required_keys)

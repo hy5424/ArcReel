@@ -12,6 +12,7 @@ export const PROVIDER_NAMES: Record<string, string> = {
   grok: "Grok",
   openai: "OpenAI",
   vidu: "Vidu",
+  dreamina: "Dreamina",
 };
 
 /**

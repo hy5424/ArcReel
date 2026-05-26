@@ -496,4 +496,35 @@ PROVIDER_REGISTRY: dict[str, ProviderMeta] = {
             ),
         },
     ),
+    "dreamina": ProviderMeta(
+        display_name="Dreamina",
+        description="即梦 Dreamina 平台，通过 CLI 调用 Seedance 2.0 视频生成和图片生成。OAuth 登录，无需 API Key。",
+        required_keys=[],
+        optional_keys=["video_max_workers", "image_max_workers"],
+        secret_keys=[],
+        models={
+            "seedance2.0fast": ModelInfo(
+                display_name="Seedance 2.0 Fast",
+                media_type="video",
+                capabilities=["text_to_video", "image_to_video"],
+                default=True,
+                supported_durations=list(range(4, 16)),
+                resolutions=["720p"],
+            ),
+            "seedance2.0": ModelInfo(
+                display_name="Seedance 2.0",
+                media_type="video",
+                capabilities=["text_to_video", "image_to_video"],
+                supported_durations=list(range(4, 16)),
+                resolutions=["720p"],
+            ),
+            "4.5": ModelInfo(
+                display_name="Dreamina 4.5",
+                media_type="image",
+                capabilities=["text_to_image", "image_to_image"],
+                default=True,
+                resolutions=["2K", "4K"],
+            ),
+        },
+    ),
 }
