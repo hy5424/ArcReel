@@ -398,6 +398,11 @@ def _normalize_video_prompt(prompt: str | dict) -> str:
     if not isinstance(prompt, dict):
         raise ValueError("prompt must be a string or object")
 
+    # video_prompt_override 优先：非空时直接使用，跳过字段拼接
+    override = str(prompt.get("video_prompt_override", "") or "").strip()
+    if override:
+        return append_video_negative_tail(override)
+
     if not is_structured_video_prompt(prompt):
         raise ValueError("prompt must be a string or include action/camera_motion")
 

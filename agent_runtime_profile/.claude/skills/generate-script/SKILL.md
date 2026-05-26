@@ -63,4 +63,15 @@ MCP 工具内部通过 `ScriptGenerator` 完成以下步骤：
 
 打印将发送给文本模型的完整 prompt 文本，不调用 API、不写文件。用于检查 prompt 质量和长度。
 
+## 提示词模式（prompt_profile）
+
+`project.json` 中 `prompt_profile` 控制 `ScriptGenerator` 选哪个 builder：
+
+| profile | narration builder | video_prompt 产出 |
+|---------|------------------|------------------|
+| `standard` | `build_narration_prompt` | action/camera_motion/ambiance_audio/dialogue |
+| `seedance` | `build_seedance_narration_prompt` | 同上 + video_prompt_override（种子导演格式） |
+
+种子模式下 `video_prompt_override` 非空时，所有视频后端直接使用该字段。
+
 > 三种生成模式的数据路径、预处理 subagent、schema 选择详见 `.claude/references/generation-modes.md`。

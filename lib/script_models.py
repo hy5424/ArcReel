@@ -73,6 +73,10 @@ class VideoPrompt(BaseModel):
     camera_motion: CameraMotion = Field(description="镜头运动")
     ambiance_audio: str = Field(description="环境音效：仅描述场景内的声音，禁止 BGM")
     dialogue: list[Dialogue] = Field(default_factory=list, description="对话列表，仅当原文有引号对话时填写")
+    video_prompt_override: str | None = Field(
+        default=None,
+        description="覆盖默认提示词拼接逻辑。非空时后端直接使用此字段作为视频生成提示词，不再从 action/camera_motion 拼接。建议填入完整的种子提示词（含画风、场景@、站位、分段时间块、禁止标签等）。",
+    )
 
 
 class GeneratedAssets(BaseModel):

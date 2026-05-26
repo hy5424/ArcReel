@@ -42,6 +42,19 @@ agent session 的当前工作目录（cwd）已绑定到当前项目根，**所�
 
 ---
 
+## 提示词模式（prompt_profile）
+
+`project.json` 中 `prompt_profile` 字段控制视频提示词的生成方式：
+
+| prompt_profile | 模式 | 拆分 subagent | 剧本 subagent | 产出的提示词 |
+|---------------|------|-------------|-------------|------------|
+| `standard`（默认） | 标准模式 | `split-narration-segments` | `create-episode-script` | action/camera_motion 等结构化字段 |
+| `seedance` | 种子导演模式 | `split-narration-seedance` | `create-seedance-script` | video_prompt_override（完整即梦 Seedance 2.0 导演格式） |
+
+两个模式共用 `mcp__arcreel__generate_episode_script` 工具——`ScriptGenerator` 根据 `prompt_profile` 自动分叉不同的 prompt builder。相同的小说拆分产出的中间文件 `step1_segments.md` 格式相同（种子版多了情绪/声线标注列），下游的资产生成、分镜生成、视频生成流程一致。
+
+**种子模式的关键区别**：`video_prompt_override` 非空时所有视频后端直接使用此字段生成视频，不再从 action/camera_motion 字段拼接。用户可在前端编辑修正。
+
 ## 内容模式
 
 本项目为**说书+画面模式**（narration）。剧本数据结构为 `segments[]`，每个片段对应一段朗读 + 一张分镜画面。

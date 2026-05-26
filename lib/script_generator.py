@@ -22,6 +22,8 @@ from lib.prompt_builders_reference import build_reference_video_prompt
 from lib.prompt_builders_script import (
     build_drama_prompt,
     build_narration_prompt,
+    build_seedance_drama_prompt,
+    build_seedance_narration_prompt,
 )
 from lib.reference_video.limits import (
     DEFAULT_MAX_REFS,
@@ -86,6 +88,7 @@ class ScriptGenerator:
         # 加载 project.json
         self.project_json = self._load_project_json()
         self.content_mode = self.project_json.get("content_mode", "narration")
+        self.prompt_profile = self.project_json.get("prompt_profile", "standard")
 
     def _effective_generation_mode(self, episode: int) -> str:
         """按 episode → project → 默认 storyboard 回退解析 generation_mode。"""
@@ -146,22 +149,52 @@ class ScriptGenerator:
             )
             schema = ReferenceVideoScript
         elif self.content_mode == "narration":
-            prompt = build_narration_prompt(
-                project_overview=self.project_json.get("overview", {}),
-                style=self.project_json.get("style", ""),
-                style_description=self.project_json.get("style_description", ""),
-                characters=characters,
-                scenes=scenes,
-                props=props,
-                segments_md=step1_md,
-                supported_durations=self._resolve_supported_durations(caps),
-                default_duration=self.project_json.get("default_duration"),
-                aspect_ratio=self._resolve_aspect_ratio(),
-                episode=episode,
-            )
+            if self.prompt_profile == "seedance":
+                prompt = build_seedance_narration_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    segments_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    default_duration=self.project_json.get("default_duration"),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
+            else:
+                prompt = build_narration_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    segments_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    default_duration=self.project_json.get("default_duration"),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
             schema = NarrationEpisodeScript
         else:
-            prompt = build_drama_prompt(
+            if self.prompt_profile == "seedance":
+                prompt = build_seedance_drama_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    scenes_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    default_duration=self.project_json.get("default_duration"),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
+            else:
+                prompt = build_drama_prompt(
                 project_overview=self.project_json.get("overview", {}),
                 style=self.project_json.get("style", ""),
                 style_description=self.project_json.get("style_description", ""),
@@ -239,6 +272,20 @@ class ScriptGenerator:
                 episode=episode,
             )
         elif self.content_mode == "narration":
+            if self.prompt_profile == "seedance":
+                return build_seedance_narration_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    segments_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    default_duration=self.project_json.get("default_duration"),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
             return build_narration_prompt(
                 project_overview=self.project_json.get("overview", {}),
                 style=self.project_json.get("style", ""),
@@ -253,6 +300,20 @@ class ScriptGenerator:
                 episode=episode,
             )
         else:
+            if self.prompt_profile == "seedance":
+                return build_seedance_drama_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    scenes_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    default_duration=self.project_json.get("default_duration"),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
             return build_drama_prompt(
                 project_overview=self.project_json.get("overview", {}),
                 style=self.project_json.get("style", ""),

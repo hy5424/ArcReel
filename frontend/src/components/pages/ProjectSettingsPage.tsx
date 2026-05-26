@@ -123,6 +123,7 @@ export function ProjectSettingsPage() {
   const [aspectRatio, setAspectRatio] = useState<string>("");
   const [generationMode, setGenerationMode] = useState<GenerationMode>("storyboard");
   const [defaultDuration, setDefaultDuration] = useState<number | null>(null);
+  const [promptProfile, setPromptProfile] = useState<string>("standard");
   const [videoResolution, setVideoResolution] = useState<string | null>(null);
   const [imageResolution, setImageResolution] = useState<string | null>(null);
   const [modelSettings, setModelSettings] = useState<Record<string, { resolution: string | null }>>({});
@@ -138,6 +139,7 @@ export function ProjectSettingsPage() {
     videoBackend: "", imageBackendT2I: "", imageBackendI2I: "", audioOverride: null as boolean | null,
     textScript: "", textOverview: "", textStyle: "",
     aspectRatio: "", generationMode: "storyboard",
+    promptProfile: "standard",
     defaultDuration: null as number | null,
     videoResolution: null as string | null,
     imageResolution: null as string | null,
@@ -196,6 +198,7 @@ export function ProjectSettingsPage() {
       const ar = rawAr || "9:16";
       const gm = normalizeMode(project.generation_mode);
       const dd = project.default_duration != null ? (project.default_duration as number) : null;
+      const pp = (project.prompt_profile as string | undefined) ?? "standard";
 
       setVideoBackend(vb);
       setImageBackendT2I(ibt2i);
@@ -207,6 +210,7 @@ export function ProjectSettingsPage() {
       setAspectRatio(ar);
       setGenerationMode(gm);
       setDefaultDuration(dd);
+      setPromptProfile(pp);
       setProjectTitle(typeof project.title === "string" ? project.title : "");
 
       // model_settings 的 key 以 effective backend（override ‖ global default）读写，
@@ -236,7 +240,7 @@ export function ProjectSettingsPage() {
       initialRef.current = {
         videoBackend: vb, imageBackendT2I: ibt2i, imageBackendI2I: ibi2i, audioOverride: ao,
         textScript: ts, textOverview: to, textStyle: tst,
-        aspectRatio: ar, generationMode: gm, defaultDuration: dd,
+        aspectRatio: ar, generationMode: gm, promptProfile: pp, defaultDuration: dd,
         videoResolution: vRes, imageResolution: iRes,
       };
     }));
@@ -286,6 +290,7 @@ export function ProjectSettingsPage() {
     aspectRatio !== initialRef.current.aspectRatio ||
     generationMode !== initialRef.current.generationMode ||
     defaultDuration !== initialRef.current.defaultDuration ||
+    promptProfile !== initialRef.current.promptProfile ||
     videoResolution !== initialRef.current.videoResolution ||
     imageResolution !== initialRef.current.imageResolution ||
     styleIsDirty;
@@ -384,6 +389,7 @@ export function ProjectSettingsPage() {
         text_backend_style: textStyle || null,
         aspect_ratio: aspectRatio || undefined,
         generation_mode: generationMode,
+        prompt_profile: promptProfile,
         default_duration: defaultDuration,
         model_settings: newModelSettings,
       });
@@ -391,7 +397,7 @@ export function ProjectSettingsPage() {
       initialRef.current = {
         videoBackend, imageBackendT2I, imageBackendI2I, audioOverride,
         textScript, textOverview, textStyle,
-        aspectRatio, generationMode, defaultDuration,
+        aspectRatio, generationMode, promptProfile, defaultDuration,
         videoResolution, imageResolution,
       };
       useAppStore.getState().pushToast(t("saved"), "success");
@@ -611,6 +617,42 @@ export function ProjectSettingsPage() {
                     value={generationMode}
                     onChange={setGenerationMode}
                   />
+                </fieldset>
+              </SectionCard>
+
+              {/* Prompt Profile */}
+              <SectionCard kicker="Prompt Profile">
+                <fieldset>
+                  <legend className="mb-2 block font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-text-3">
+                    {t("prompt_profile_label")}
+                  </legend>
+                  <div className="flex flex-wrap gap-x-5 gap-y-2">
+                    <label className="inline-flex items-center gap-2 text-[12.5px] text-text-2">
+                      <input
+                        type="radio"
+                        name="promptProfile"
+                        value="standard"
+                        checked={promptProfile === "standard"}
+                        onChange={() => setPromptProfile("standard")}
+                        className="accent-[oklch(0.76_0.09_295)]"
+                      />
+                      {t("prompt_profile_standard")}
+                    </label>
+                    <label className="inline-flex items-center gap-2 text-[12.5px] text-text-2">
+                      <input
+                        type="radio"
+                        name="promptProfile"
+                        value="seedance"
+                        checked={promptProfile === "seedance"}
+                        onChange={() => setPromptProfile("seedance")}
+                        className="accent-[oklch(0.76_0.09_295)]"
+                      />
+                      {t("prompt_profile_seedance")}
+                    </label>
+                  </div>
+                  <p className="mt-2 text-[10.5px] leading-relaxed text-text-3">
+                    {promptProfile === "seedance" ? t("prompt_profile_seedance_desc") : t("prompt_profile_standard_desc")}
+                  </p>
                 </fieldset>
               </SectionCard>
 

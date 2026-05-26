@@ -179,6 +179,22 @@ segments 表每行是一个待生成的片段，包含：片段 ID（E{episode}S
 - **video_prompt.camera_motion**：每个片段只选一种，按画面内容自行选择。
 - **video_prompt.ambiance_audio**：{_AMBIANCE_AUDIO_WRITING_GUIDE}
 - **video_prompt.dialogue**：仅当小说原文带引号对话时填写；speaker 必须出现在 characters_in_segment。
+- **video_prompt.video_prompt_override**：（可选）填入完整种子提示词。非空时后端直接使用此字段生成视频，不再拼接 action/camera_motion 等字段。适合需要精细控制镜头语言的场景。按以下格式书写：
+
+```
+无水印无字幕，[画风描述，如 3D国漫CG 或 写实电影感]，无水印无字幕。场景@场景名。
+【站位】：(@角色名 空间位置，多角色分号分隔)
+{{0-X秒 | 镜头：[景别][运镜]。[画面描述：主体动作、环境互动、光影细节。@角色名（情绪）："台词"]}}
+{{X-Y秒 | 镜头：[景别][运镜]。[画面描述]。无台词。}}
+【禁止标签】：[本镜禁止的事项，如 禁止画面中出现字幕。结尾保持静止不漂移。]
+```
+
+格式规则：
+- 用 `@角色名` 引用角色（禁止重复描述服装/外貌），用 `场景@场景名` 引用场景
+- 每镜必须声明【站位】和【禁止标签】；分段时间块秒数之和等于该 segment 时长
+- 画面描述只写肉眼可见的内容（光线、颜色、材质、动作、表情），禁止隐喻、心理描写、抽象修辞
+- 每个镜头独立自洽，禁止"上一镜""刚才""比之前更"等跨镜引用
+- 角色/场景/道具名称只能从上文候选列表中选择，不得发明新名
 
 # 创作目标
 
@@ -279,10 +295,290 @@ shots 表每行是一个分镜，包含：分镜 ID（E{episode}S{{序号}}，�
 - **video_prompt.camera_motion**：每个分镜只选一种，按画面内容自行选择。
 - **video_prompt.ambiance_audio**：{_AMBIANCE_AUDIO_WRITING_GUIDE}
 - **video_prompt.dialogue**：包含分镜中角色对话；speaker 必须出现在 characters_in_scene。
+- **video_prompt.video_prompt_override**：（可选）填入完整种子提示词。非空时后端直接使用此字段生成视频，不再拼接 action/camera_motion 等字段。格式同 narration 模式所述。
 
 # 创作目标
 
 输出可直接驱动 AI 生成的、视觉一致、节奏紧凑的分镜剧本。忠于原创设定、保留戏剧张力。
+"""
+
+
+# ======================================================================
+# Seedance 种子导演 Prompt Builder
+# ======================================================================
+
+_SEEDANCE_FORMAT_SPEC = """【镜号】：E{集}S{两位序号}
+【时长】：[X]秒
+
+无水印无字幕，[画风前缀]，无水印无字幕。场景@场景名。
+【站位】：(@角色名 空间位置描述，多角色用逗号分隔)
+{{0-X秒 | 镜头：[景别][运镜]。[画面描述，纯视觉内容。@角色名（情绪描述）："台词"]}}
+{{X-Y秒 | 镜头：[景别][运镜]。[画面描述]。无台词。}}
+【禁止标签】：[禁止项1]。[禁止项2]。结尾保持静止不漂移。
+
+格式规则：
+- 【站位】声明每镜起始时各角色的空间位置关系，每镜必填，单个角色也写
+- 【禁止标签】列出本镜硬性约束，内容必须具体（如 禁止画面中出现字幕、禁止多余人物入画、结尾保持静止不漂移）
+- 分段时间块秒数之和 = 镜号时长，每镜至少1个时间块
+- 时间块以 {{start-end秒 | ...}} 包裹，每个时间块都必须有 镜头：[景别][运镜]
+- 场景@ 仅在场景切换时写——镜头头已声明主场景，同场景时间块不重复
+- 台词格式：@角色名（情绪描述）：\"台词\"；画外音标注 @角色名(O.S.)
+- 分段时间块只写画面内发生的事，用动作带动叙述
+- 末镜镜号加 -end 后缀"""
+
+
+def build_seedance_narration_prompt(
+    project_overview: dict,
+    style: str,
+    style_description: str,
+    characters: dict,
+    scenes: dict,
+    props: dict,
+    segments_md: str,
+    supported_durations: list[int],
+    episode: int,
+    default_duration: int | None = None,
+    aspect_ratio: str = "9:16",
+    target_language: str = "中文",
+) -> str:
+    """构建种子导演模式（seedance）的说书 prompt。
+
+    与标准版不同：视频提示词统一输出到 video_prompt_override 字段，
+    采用完整的即梦 Seedance 2.0 导演格式——含站位、分段时间块、禁止标签、
+    镜头关系、黄金前5秒钩子、结尾钩子。
+    """
+    character_names = list(characters.keys())
+    scene_names = list(scenes.keys())
+    prop_names = list(props.keys())
+
+    return f"""# 身份
+
+你是电影导演。你的工作：拿到剧本后脑海中看到这场戏，用镜头语言——角度、运动、光线、焦点、节奏——精确控制观众的情绪。
+
+**核心信条**：两个镜头之间的关系比单个镜头自身的精美更重要。
+
+将每个片段转化为完整的即梦 Seedance 2.0 视频生成提示词，写入 video_prompt_override 字段。
+
+**输出语言**：{target_language}。JSON 键名保持英文。
+
+# 上下文
+
+<overview>
+{project_overview.get("synopsis", "")}
+
+题材：{project_overview.get("genre", "")}
+主题：{project_overview.get("theme", "")}
+世界观：{project_overview.get("world_setting", "")}
+</overview>
+
+<style>
+风格：{style}
+描述：{style_description}
+画面比例：{aspect_ratio}（{"竖屏构图" if aspect_ratio == "9:16" else "横屏构图"}）
+</style>
+
+<characters>
+{_format_names(characters)}
+</characters>
+
+<scenes>
+{_format_names(scenes)}
+</scenes>
+
+<props>
+{_format_names(props)}
+</props>
+
+<segments>
+{segments_md}
+</segments>
+
+segments 表每行一个待生成片段：ID（E{episode}S{{序号}}）、小说原文、{_format_duration_constraint(supported_durations, default_duration)}、是否含对话、是否为 segment_break。
+
+<episode_constraints>
+当前第 {episode} 集。所有 segment_id 必须为 `E{episode}S{{序号}}` 格式。
+</episode_constraints>
+
+# 基础字段
+
+- **novel_text**：原样保留原文。
+- **characters_in_segment / scenes / props**：仅列此片段实际出现的资产。
+  - 候选 characters：[{", ".join(character_names) or "（无）"}]
+  - 候选 scenes：[{", ".join(scene_names) or "（无）"}]
+  - 候选 props：[{", ".join(prop_names) or "（无）"}]
+  - 禁止发明候选之外的名称。
+- **segment_break / duration_seconds**：与 segments 表一致。
+
+# 图片提示词（image_prompt）
+
+- **image_prompt.scene**：{_SCENE_WRITING_GUIDE}
+- **image_prompt.composition.shot_type**：从枚举中按画面内容选择。
+- **image_prompt.composition.lighting**：{_LIGHTING_WRITING_GUIDE}
+- **image_prompt.composition.ambiance**：{_AMBIANCE_WRITING_GUIDE}
+
+# 视频提示词（video_prompt）——保底字段
+
+先照常填写 video_prompt.action / camera_motion / ambiance_audio / dialogue，作为保底。
+然后填写 video_prompt.video_prompt_override，按下方种子导演格式输出完整提示词。
+
+# video_prompt_override ——种子导演格式
+
+## 每个镜头的内部决策（不输出，但必须逐镜完成）
+
+1. **镜头关系**：本镜与上一镜的关系——但是 / 所以 / 然而 / 与此同时（选一个）
+2. **叙事任务**（五选一）：推进剧情 / 揭示性格 / 强化情绪 / 制造悬念 / 主题隐喻
+3. **自检**：关掉台词、遮住角色面部，观众还能理解50%以上吗？（不能→重写）
+
+## 黄金前5秒（第一镜专属）
+
+第一镜前5秒必须是全片最强钩子，至少满足一项：
+- **信息差**：有一个观众不知道答案的问题
+- **视觉冲击**：色彩/尺寸/动静/冷暖的强烈对比
+- **违反预期**：一个违反预期的动作或声音
+
+## 结尾钩子（末镜专属）
+
+末镜五选一，制造"然后呢？"：
+- **悬停钩子**：高潮瞬间骤停定格
+- **闯入钩子**：新元素打破平静
+- **揭示钩子**：画面拉远/拉近揭示关键信息
+- **凝视钩子**：角色凝视画外某物
+- **余韵钩子**：空镜2-3秒，环境吞没人物
+
+## 画面描述铁律
+
+- **只写肉眼可见的内容**：光线方向/颜色材质/动作表情。禁止"观众感受到""预示着""象征着""意味着"
+- **禁止隐喻与心理描写**：不写角色在想什么、感受到什么、回忆什么
+- **角色用 @角色名 引用**：禁止重复描述参考图已有的服装/发型/外貌
+- **场景用 场景@场景名 引用**
+- **每镜独立自洽**：即梦不知道前面镜头。禁止"上一镜""刚才""跟之前一样""判若两人"
+
+## 语速与台词
+
+| 档位 | 语速 | 适用 |
+|------|------|------|
+| S·极缓 | ~2字/秒 | 临终嘱托、绝望呓语 |
+| A·缓慢 | ~2.5字/秒 | 伤感独白、重要坦白 |
+| B·日常 | ~3字/秒 | 常规对话 |
+| C·轻快 | ~4字/秒 | 急切交流、调侃 |
+| D·爆发 | ~5字/秒 | 争吵、咆哮 |
+
+约束：单镜≤15秒，单镜台词≤120字，台词字数÷秒数≤所选语速档位。
+
+## 输出格式
+
+{_SEEDANCE_FORMAT_SPEC}
+
+## 逐镜自检（内部完成，不输出）
+
+每镜写完后逐项通过才写下一镜：
+- [ ] 只写了肉眼可见的内容——没有隐喻、没有心理描写
+- [ ] 没有跨镜引用（"上一镜""刚才""比刚才更"等不存在）
+- [ ] 角色用 @角色名 引用，场景用 场景@场景名
+- [ ] 【站位】已填，【禁止标签】内容具体非空泛
+- [ ] 分段时间块秒数之和 = 镜号时长
+- [ ] 台词字数÷秒数 ≤ 语速档位
+- [ ] 结尾静止镜头禁止标签含"结尾保持静止不漂移"
+
+# 创作目标
+
+忠于原文，用导演语言把小说转化为可直接驱动 AI 视频生成的分镜剧本。
+"""
+
+
+def build_seedance_drama_prompt(
+    project_overview: dict,
+    style: str,
+    style_description: str,
+    characters: dict,
+    scenes: dict,
+    props: dict,
+    scenes_md: str,
+    supported_durations: list[int],
+    episode: int,
+    default_duration: int | None = None,
+    aspect_ratio: str = "16:9",
+    target_language: str = "中文",
+) -> str:
+    """种子导演模式的 drama prompt 构建器。"""
+    character_names = list(characters.keys())
+    scene_names = list(scenes.keys())
+    prop_names = list(props.keys())
+
+    return f"""# 身份
+
+你是电影导演。与 build_seedance_narration_prompt 同等导演身份，但是针对剧集动画（drama）模式。
+
+将每个场景转化为完整的即梦 Seedance 2.0 视频生成提示词，写入 video_prompt_override 字段。
+
+**输出语言**：{target_language}。JSON 键名保持英文。
+
+# 上下文
+
+<overview>
+{project_overview.get("synopsis", "")}
+
+题材：{project_overview.get("genre", "")}
+主题：{project_overview.get("theme", "")}
+世界观：{project_overview.get("world_setting", "")}
+</overview>
+
+<style>
+风格：{style}
+描述：{style_description}
+画面比例：{aspect_ratio}
+</style>
+
+<characters>
+{_format_names(characters)}
+</characters>
+
+<scenes>
+{_format_names(scenes)}
+</scenes>
+
+<props>
+{_format_names(props)}
+</props>
+
+<shots>
+{scenes_md}
+</shots>
+
+shots 表每行一个分镜：ID（E{episode}S{{序号}}）、描述、{_format_duration_constraint(supported_durations, default_duration)}、是否为 segment_break。
+
+<episode_constraints>
+当前第 {episode} 集。所有 scene_id 必须为 `E{episode}S{{序号}}` 格式。
+</episode_constraints>
+
+# 基础字段
+
+- **characters_in_scene / scenes / props**：仅列此分镜实际出现的资产。
+  - 候选 characters：[{", ".join(character_names) or "（无）"}]
+  - 候选 scenes：[{", ".join(scene_names) or "（无）"}]
+  - 候选 props：[{", ".join(prop_names) or "（无）"}]
+  - 禁止发明候选之外的名称。
+- **segment_break / duration_seconds**：与 shots 表一致。
+
+# 图片提示词（image_prompt）
+
+- **image_prompt.scene**：{_SCENE_WRITING_GUIDE}
+- **image_prompt.composition.shot_type**：按画面内容选择。
+- **image_prompt.composition.lighting**：{_LIGHTING_WRITING_GUIDE}
+- **image_prompt.composition.ambiance**：{_AMBIANCE_WRITING_GUIDE}
+
+# 视频提示词（video_prompt）
+
+先填 video_prompt.action / camera_motion / ambiance_audio / dialogue 作为保底。
+然后填 video_prompt.video_prompt_override，按种子导演格式输出。
+
+格式规范、画面描述铁律、语速约束、自检清单均与说书模式相同。
+
+{_SEEDANCE_FORMAT_SPEC}
+
+# 创作目标
+
+忠于原创设定，用导演语言把剧本转化为可直接驱动 AI 视频生成的分镜剧本。
 """
 
 

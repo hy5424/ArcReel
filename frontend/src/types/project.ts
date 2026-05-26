@@ -124,6 +124,8 @@ export interface ProjectData {
   image_provider_i2i?: string | null;
   /** Canonical values: storyboard | grid | reference_video. "single" is legacy-only. */
   generation_mode?: "storyboard" | "grid" | "reference_video" | "single";
+  /** Prompt generation profile: "standard" (default) or "seedance" (导演模式) */
+  prompt_profile?: "standard" | "seedance";
   video_generate_audio?: boolean | null;
   text_backend_script?: string | null;
   text_backend_overview?: string | null;

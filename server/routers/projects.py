@@ -110,6 +110,7 @@ class UpdateProjectRequest(BaseModel):
     aspect_ratio: str | None = None
     default_duration: int | None = None
     generation_mode: str | None = None
+    prompt_profile: str | None = None
     video_backend: str | None = None
     image_backend: str | None = None
     image_provider_t2i: str | None = None
@@ -657,6 +658,11 @@ async def update_project(name: str, req: UpdateProjectRequest, _user: CurrentUse
                         project.pop("default_duration", None)
                     else:
                         project["default_duration"] = req.default_duration
+                if "prompt_profile" in req.model_fields_set:
+                    if req.prompt_profile is None:
+                        project.pop("prompt_profile", None)
+                    else:
+                        project["prompt_profile"] = req.prompt_profile
 
                 if "style_template_id" in req.model_fields_set:
                     if req.style_template_id is None:
