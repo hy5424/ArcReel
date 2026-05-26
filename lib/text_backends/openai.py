@@ -88,10 +88,11 @@ class OpenAITextBackend:
         except Exception as exc:
             if request.response_schema and _is_schema_error(exc):
                 logger.warning(
-                    "原生 response_format 失败 (%s)，降级到 Instructor 路径",
+                    "原生 response_format (json_schema) 失败 (%s)，尝试 json_object 模式",
                     exc,
                 )
-                return await _instructor_fallback(self._client, self._model, request, messages)
+                # DeepSeek 等供应商不支持 json_schema，但支持 json_object
+                return await _json_object_attempt(self._client, self._model, request, messages)
             raise
 
         usage = response.usage
@@ -182,6 +183,60 @@ def _is_schema_error(exc: BaseException) -> bool:
     # 代理可能把上游 schema 错误包装成非 400 状态码
     error_str = str(exc)
     return any(kw in error_str for kw in _SCHEMA_ERROR_KEYWORDS)
+
+
+async def _json_object_attempt(
+    client: AsyncOpenAI,
+    model: str,
+    request: TextGenerationRequest,
+    messages: list[dict],
+) -> TextGenerationResult:
+    """DeepSeek 等供应商不支持 json_schema，但支持 json_object 模式。
+
+    将 schema 注入 system message 开头，然后用 response_format={'type': 'json_object'} 调用。
+    失败时降级到 Instructor。
+    """
+    schema = resolve_schema(request.response_schema) if request.response_schema else None
+    if schema:
+        schema_hint = (
+            f"你必须输出符合以下 JSON Schema 的合法 JSON。不要在 JSON 之外输出任何文本。\n"
+            f"```json\n{json.dumps(schema, ensure_ascii=False)}\n```\n"
+        )
+        if messages and messages[0].get("role") == "system":
+            messages[0]["content"] = schema_hint + messages[0]["content"]
+        else:
+            messages.insert(0, {"role": "system", "content": schema_hint})
+
+    kwargs: dict = {
+        "model": model,
+        "messages": messages,
+        "response_format": {"type": "json_object"},
+    }
+    if request.max_output_tokens is not None:
+        kwargs["max_tokens"] = request.max_output_tokens
+
+    logger.info("json_object 降级调用 kwargs=%s", format_kwargs_for_log(kwargs))
+    try:
+        response = await client.chat.completions.create(**kwargs)
+    except Exception as exc:
+        logger.warning("json_object 模式也失败 (%s)，降级到 Instructor", exc)
+        return await _instructor_fallback(client, model, request, messages)
+
+    usage = response.usage
+    choice = response.choices[0]
+    text = choice.message.content or ""
+    output_tokens = usage.completion_tokens if usage else None
+
+    if _is_valid_json(text):
+        warn_if_truncated(getattr(choice, "finish_reason", None), text, model)
+        return TextGenerationResult(
+            text=text,
+            model=model,
+            usage_tokens=output_tokens,
+        )
+
+    logger.warning("json_object 返回非 JSON，降级到 Instructor")
+    return await _instructor_fallback(client, model, request, messages)
 
 
 async def _instructor_fallback(
