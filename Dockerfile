@@ -33,8 +33,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 uv 独立二进制 (比 pip install uv 快一个数量级)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# 下载 uv 独立二进制 (~25MB，比拉 ghcr 镜像快)
+ADD https://gh.ddlc.top/https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
+RUN tar -xzf /tmp/uv.tar.gz -C /usr/local/bin --strip-components=1 && \
+    chmod +x /usr/local/bin/uv && \
+    rm /tmp/uv.tar.gz
 
 WORKDIR /app
 
