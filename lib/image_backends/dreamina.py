@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os as _os
 import re
 from pathlib import Path
 
@@ -95,12 +96,17 @@ class DreaminaImageBackend:
             ),
         )
 
-        # 3. 下载
+        # 3. 下载到临时目录，然后移到目标路径
+        import asyncio as _asyncio
         output_dir = request.output_path.parent
         output_dir.mkdir(parents=True, exist_ok=True)
 
         await self._download_result(submit_id, str(output_dir))
-        image_path = self._find_downloaded(output_dir, submit_id)
+        downloaded = self._find_downloaded(output_dir, submit_id)
+        # dreamina 生成的文件名不匹配 ArcReel 期望的路径，重命名
+        if downloaded != request.output_path:
+            await _asyncio.to_thread(_os.replace, downloaded, request.output_path)
+        image_path = request.output_path
 
         logger.info("Dreamina 图片下载完成: %s", image_path)
 

@@ -182,12 +182,15 @@ class DreaminaVideoBackend:
             ),
         )
 
-        # 3. 下载
+        # 3. 下载到临时目录，然后移到目标路径
         output_dir = request.output_path.parent
         output_dir.mkdir(parents=True, exist_ok=True)
 
         await self._download_result(submit_id, str(output_dir))
-        video_path = self._find_downloaded(output_dir, submit_id)
+        downloaded = self._find_downloaded(output_dir, submit_id)
+        if downloaded != request.output_path:
+            await asyncio.to_thread(os.replace, downloaded, request.output_path)
+        video_path = request.output_path
 
         logger.info("Dreamina 视频下载完成: %s", video_path)
 
