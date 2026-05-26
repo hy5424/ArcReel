@@ -19,6 +19,9 @@ services:
       - apparmor:unconfined
     cap_add:
       - NET_ADMIN
+    dns:
+      - 223.5.5.5
+      - 114.114.114.114
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:1241/health"]
