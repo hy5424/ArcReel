@@ -210,7 +210,7 @@ class ScriptGenerator:
             schema = DramaEpisodeScript
 
         # 4. 调用 TextBackend
-        logger.info("正在生成第 %d 集剧本...", episode)
+        logger.info("正在生成第 %d 集剧本... (prompt_profile=%s, content_mode=%s)", episode, self.prompt_profile, self.content_mode)
         project_name = self.project_path.name
         result = await self.generator.generate(
             TextGenerationRequest(
