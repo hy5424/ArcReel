@@ -18,7 +18,10 @@ from lib.config.registry import PROVIDER_REGISTRY
 from lib.config.resolver import ConfigResolver
 from lib.db import async_session_factory
 from lib.project_manager import effective_mode
-from lib.prompt_builders_reference import build_reference_video_prompt
+from lib.prompt_builders_reference import (
+    build_reference_video_prompt,
+    build_seedance_reference_prompt,
+)
 from lib.prompt_builders_script import (
     build_drama_prompt,
     build_narration_prompt,
@@ -133,7 +136,23 @@ class ScriptGenerator:
         props = self.project_json.get("props", {})
 
         if gen_mode == "reference_video":
-            prompt = build_reference_video_prompt(
+            if self.prompt_profile == "seedance":
+                prompt = build_seedance_reference_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    units_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    max_refs=self._resolve_max_refs(caps),
+                    max_duration=self._resolve_max_duration(caps),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
+            else:
+                prompt = build_reference_video_prompt(
                 project_overview=self.project_json.get("overview", {}),
                 style=self.project_json.get("style", ""),
                 style_description=self.project_json.get("style_description", ""),
@@ -257,6 +276,21 @@ class ScriptGenerator:
         props = self.project_json.get("props", {})
 
         if gen_mode == "reference_video":
+            if self.prompt_profile == "seedance":
+                return build_seedance_reference_prompt(
+                    project_overview=self.project_json.get("overview", {}),
+                    style=self.project_json.get("style", ""),
+                    style_description=self.project_json.get("style_description", ""),
+                    characters=characters,
+                    scenes=scenes,
+                    props=props,
+                    units_md=step1_md,
+                    supported_durations=self._resolve_supported_durations(caps),
+                    max_refs=self._resolve_max_refs(caps),
+                    max_duration=self._resolve_max_duration(caps),
+                    aspect_ratio=self._resolve_aspect_ratio(),
+                    episode=episode,
+                )
             return build_reference_video_prompt(
                 project_overview=self.project_json.get("overview", {}),
                 style=self.project_json.get("style", ""),

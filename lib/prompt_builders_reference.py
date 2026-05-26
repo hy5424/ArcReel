@@ -141,3 +141,125 @@ d. **duration_seconds**：所有 shot `duration` 之和；不要手动覆盖。
 
 请按 step1_units 顺序逐 unit 产出。
 """
+
+
+def build_seedance_reference_prompt(
+    *,
+    project_overview: dict,
+    style: str,
+    style_description: str,
+    characters: dict,
+    scenes: dict,
+    props: dict,
+    units_md: str,
+    supported_durations: list[int],
+    max_refs: int,
+    episode: int,
+    max_duration: int | None = None,
+    aspect_ratio: str = "9:16",
+    target_language: str = "中文",
+) -> str:
+    """种子导演模式的参考生视频 prompt 构建器。
+
+    与标准版不同：每个 shot 的 text 字段采用种子导演格式——
+    含画风前缀、场景@、站位、分段时间块、禁止标签。
+    """
+    character_names = list(characters.keys())
+    scene_names = list(scenes.keys())
+    prop_names = list(props.keys())
+
+    durations_desc = "/".join(str(d) for d in supported_durations) + "s"
+    max_duration_line = (
+        f"\n   - unit 内所有 Shot `duration` 之和宜贴近 {max_duration} 秒（当前模型上限），"
+        f"除非内容明显不需要这么长；不要默认挑最短值，也不得超过 {max_duration}。"
+        if max_duration is not None
+        else ""
+    )
+
+    return f"""# 身份
+
+你是电影导演。本任务是为「参考生视频 + 种子导演」模式产出 JSON 剧本。
+
+将每个 shot 的 text 字段写成完整的即梦 Seedance 2.0 导演格式提示词。
+
+**输出语言**：{target_language}。JSON 键名保持英文。
+
+# 上下文
+
+<overview>
+{project_overview.get("synopsis", "")}
+
+题材：{project_overview.get("genre", "")}
+主题：{project_overview.get("theme", "")}
+世界观：{project_overview.get("world_setting", "")}
+</overview>
+
+<style>
+风格：{style}
+描述：{style_description}
+画面比例：{aspect_ratio}
+</style>
+
+<characters>
+{_format_asset_names(characters)}
+</characters>
+
+<scenes>
+{_format_asset_names(scenes)}
+</scenes>
+
+<props>
+{_format_asset_names(props)}
+</props>
+
+<step1_units>
+{units_md}
+</step1_units>
+
+<episode_constraints>
+当前第 {episode} 集。所有 unit_id 必须为 `E{episode}U{{序号}}` 格式。
+</episode_constraints>
+
+# 字段指引
+
+## 基础字段（与标准版相同）
+
+- **unit_id**：保留 E{episode}U{{序号}}
+- **shots**：1-4 个，每个 duration 取 {durations_desc}{max_duration_line}
+- **references**：type + name，name 只能从候选取：
+    - character: {", ".join(character_names) or "（无）"}
+    - scene: {", ".join(scene_names) or "（无）"}
+    - prop: {", ".join(prop_names) or "（无）"}
+- references 总数 ≤ {max_refs}
+
+## shot.text ——种子导演格式
+
+每个 shot 的 text 必须严格按以下格式输出：
+
+```
+无水印无字幕，[画风前缀]，无水印无字幕。场景@场景名。
+【站位】：(@角色名 空间位置，多角色逗号分隔)
+{{{{0-X秒 | 镜头：[景别][运镜]。[画面描述，纯视觉内容。@角色名（情绪）："台词"]}}}}
+【禁止标签】：[禁止项]。结尾保持静止不漂移。
+```
+
+格式铁律：
+- 用 @角色名（不加方括号）引用角色，禁止重复描述服装/发型/外貌
+- 用 场景@场景名 引用场景
+- 每 shot 必填【站位】和【禁止标签】
+- 分段时间块秒数之和 = shot.duration
+- 画面描述只写肉眼可见的内容，禁止隐喻/心理描写/抽象修辞
+- 禁止"上一镜""刚才"等跨镜引用——每个 shot 独立自洽
+- 角色/场景/道具名只能从上文候选列表选取
+- references 按 shot.text 中 @ 引用的顺序排列
+
+## 黄金前5秒（第一 unit 第一 shot 专属）
+
+必须至少满足一项：信息差 / 视觉冲击 / 违反预期
+
+## 结尾钩子（末 unit 末 shot 专属）
+
+五选一：悬停定格 / 新元素闯入 / 揭示关键信息 / 角色凝视画外 / 空镜余韵
+
+请按 step1_units 顺序逐 unit 产出。
+"""
