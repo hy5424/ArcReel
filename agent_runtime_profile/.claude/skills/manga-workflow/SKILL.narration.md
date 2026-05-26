@@ -92,22 +92,32 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 
 ## 阶段 2：分集规划
 
-**触发**：目标集的 `source/episode_{N}.txt` 不存在
+**触发**：任一集的 `source/episode_{N}.txt` 不存在
+
+根据 `project.json` 的 `prompt_profile` 选择模式：
+
+### 标准模式（`prompt_profile != "seedance"`）
 
 每次只切分当前需要制作的那一集。**主 agent 直接执行**（不 dispatch subagent）：
 
 1. 确定源文件：`source/_remaining.txt` 存在则使用，否则用原始小说文件
 2. 询问用户目标字数（如 1000 字/集）
-3. 调用 `peek_split_point.py` 展示切分点附近上下文：
-   ```bash
-   python .claude/skills/manage-project/scripts/peek_split_point.py --source {源文件} --target {目标字数}
-   ```
+3. 调用 `peek_split_point.py` 展示切分点附近上下文
 4. 分析 nearby_breakpoints，建议自然断点
-5. 用户确认后，先 dry run 验证：
-   ```bash
-   python .claude/skills/manage-project/scripts/split_episode.py --source {源文件} --episode {N} --target {目标字数} --anchor "{锚点文本}" --dry-run
-   ```
-6. 确认无误后实际执行（去掉 `--dry-run`）
+5. 用户确认后，先 dry run 验证，再实际执行 `split_episode.py`
+
+### 种子模式（`prompt_profile == "seedance"`）
+
+dispatch `split-episodes-seedance` subagent，**一次性分析全文并按叙事节奏拆出全部集数**。
+
+该 subagent 自主完成：
+- 全局叙事结构分析（控制思想/幕间断裂点/张力曲线）
+- 角色弧光提取（Want/Need/Lie/Ghost）
+- 视觉母题选定
+- 按叙事断点（非字数）确定每集范围
+- 输出所有 `source/episode_N.txt` + `drafts/narrative_analysis.md` + `drafts/episode_outline.md`
+
+**无需询问用户字数**——分集由其自主按叙事节奏决定。完成后展示分集方案（每集核心事件、字数、情绪曲线、视觉母题）供用户确认。
 
 ---
 

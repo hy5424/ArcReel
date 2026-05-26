@@ -46,12 +46,14 @@ agent session 的当前工作目录（cwd）已绑定到当前项目根，**所�
 
 `project.json` 中 `prompt_profile` 字段控制视频提示词的生成方式：
 
-| prompt_profile | 模式 | 拆分 subagent | 剧本 subagent | 产出的提示词 |
-|---------------|------|-------------|-------------|------------|
-| `standard`（默认） | 标准模式 | `split-narration-segments` | `create-episode-script` | action/camera_motion 等结构化字段 |
-| `seedance` | 种子导演模式 | `split-narration-seedance` | `create-seedance-script` | video_prompt_override（完整即梦 Seedance 2.0 导演格式） |
+| prompt_profile | 模式 | 分集 | 拆分 | 剧本 | 产出 |
+|---------------|------|------|------|------|------|
+| `standard`（默认） | 标准 | 主 agent 手动拆（字数） | `split-narration-segments` | `create-episode-script` | action/camera_motion |
+| `seedance` | 种子导演 | `split-episodes-seedance`（叙事节奏） | `split-narration-seedance` | `create-seedance-script` | video_prompt_override |
 
-两个模式共用 `mcp__arcreel__generate_episode_script` 工具——`ScriptGenerator` 根据 `prompt_profile` 自动分叉不同的 prompt builder。相同的小说拆分产出的中间文件 `step1_segments.md` 格式相同（种子版多了情绪/声线标注列），下游的资产生成、分镜生成、视频生成流程一致。
+种子模式三个阶段全部由 subagent 自主完成：分集按叙事节奏一次性全拆（不询问字数）、拆分标注情绪/声线、剧本生成输出完整种子格式。
+
+两个模式共用 `mcp__arcreel__generate_episode_script` 工具——`ScriptGenerator` 根据 `prompt_profile` 自动分叉不同的 prompt builder。下游的资产生成、分镜生成、视频生成流程一致。
 
 **种子模式的关键区别**：`video_prompt_override` 非空时所有视频后端直接使用此字段生成视频，不再从 action/camera_motion 字段拼接。用户可在前端编辑修正。
 
