@@ -25,7 +25,7 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 ### 新项目
 
 1. 提示用户在 Web 端先创建项目，**创建时指定 content_mode**（narration / drama）；session 启动后 cwd 已绑定到对应项目根
-2. 使用 Read 工具读取 `project.json`，确认 `title`、`content_mode`、`generation_mode` 字段（本 session 当前 content_mode 为 `drama`，创建后不可变更）
+2. 使用 Read 工具读取 `project.json`，确认 `title`、`content_mode`、`generation_mode`、`prompt_profile` 字段（本 session 当前 content_mode 为 `drama`，创建后不可变更）
 3. 若 `generation_mode` 未在创建时指定，AskUserQuestion 询问后由用户在 Web 端补齐（或由 mcp__arcreel__ 配置工具写入）
 4. 请用户将小说文本放入 `source/`
 5. **上传后自动生成项目概述**（synopsis、genre、theme、world_setting）
@@ -36,7 +36,8 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 
 1. session cwd 已经绑定到目标项目根
 2. 通过 Read `project.json` + Glob 文件系统判定状态摘要
-3. 从上次未完成的阶段继续
+3. **记住 `prompt_profile` 字段**（`"standard"` 或 `"seedance"`）——后续所有阶段的分叉都依赖此值
+4. 从上次未完成的阶段继续
 
 ---
 
@@ -46,6 +47,9 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 
 1. characters / scenes / props 中**任一**为空（定义缺失）？ → **阶段 1**
 2. 目标集 source/episode_{N}.txt 不存在？ → **阶段 2**
+   - **重要**：进入阶段 2 前必须确认 `project.json` 中 `prompt_profile` 的值
+   - `prompt_profile == "seedance"` → dispatch `split-episodes-seedance`
+   - 否则 → 走标准手动拆分
 3. 目标集 drafts/ 中间文件不存在？ → **阶段 3**
    - generation_mode ∈ {storyboard, grid}: `drafts/episode_{N}/step1_normalized_script.md`
    - generation_mode == reference_video: `drafts/episode_{N}/step1_reference_units.md`
@@ -94,19 +98,21 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 
 **触发**：目标集的 `source/episode_{N}.txt` 不存在
 
+根据 `prompt_profile` 选择模式：
+
+### 标准模式（`prompt_profile != "seedance"`）
+
 每次只切分当前需要制作的那一集。**主 agent 直接执行**（不 dispatch subagent）：
 
 1. 确定源文件：`source/_remaining.txt` 存在则使用，否则用原始小说文件
 2. 询问用户目标字数（如 1000 字/集）
-3. 调用 `peek_split_point.py` 展示切分点附近上下文：
-   ```bash
-   python .claude/skills/manage-project/scripts/peek_split_point.py --source {源文件} --target {目标字数}
-   ```
+3. 调用 `peek_split_point.py` 展示切分点附近上下文
 4. 分析 nearby_breakpoints，建议自然断点
-5. 用户确认后，先 dry run 验证：
-   ```bash
-   python .claude/skills/manage-project/scripts/split_episode.py --source {源文件} --episode {N} --target {目标字数} --anchor "{锚点文本}" --dry-run
-   ```
+5. 用户确认后，先 dry run 验证，再实际执行 `split_episode.py`
+
+### 种子模式（`prompt_profile == "seedance"`）
+
+dispatch `split-episodes-seedance` subagent，一次性按叙事节奏拆出全部集数，不询问字数。
 6. 确认无误后实际执行（去掉 `--dry-run`）
 
 ---

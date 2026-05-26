@@ -25,7 +25,7 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 ### 新项目
 
 1. 提示用户在 Web 端先创建项目，**创建时指定 content_mode**（narration / drama）；session 启动后 cwd 已绑定到对应项目根
-2. 使用 Read 工具读取 `project.json`，确认 `title`、`content_mode`、`generation_mode` 字段（本 session 当前 content_mode 为 `narration`，创建后不可变更）
+2. 使用 Read 工具读取 `project.json`，确认 `title`、`content_mode`、`generation_mode`、`prompt_profile` 字段（本 session 当前 content_mode 为 `narration`，创建后不可变更）
 3. 若 `generation_mode` 未在创建时指定，AskUserQuestion 询问后由用户在 Web 端补齐（或由 mcp__arcreel__ 配置工具写入）
 4. 请用户将小说文本放入 `source/`
 5. **上传后自动生成项目概述**（synopsis、genre、theme、world_setting）
@@ -36,7 +36,8 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 
 1. session cwd 已经绑定到目标项目根
 2. 通过 Read `project.json` + Glob 文件系统判定状态摘要
-3. 从上次未完成的阶段继续
+3. **记住 `prompt_profile` 字段**（`"standard"` 或 `"seedance"`）——后续所有阶段的分叉都依赖此值
+4. 从上次未完成的阶段继续
 
 ---
 
@@ -46,6 +47,9 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 
 1. characters / scenes / props 中**任一**为空（定义缺失）？ → **阶段 1**
 2. 目标集 source/episode_{N}.txt 不存在？ → **阶段 2**
+   - **重要**：进入阶段 2 前必须确认 `project.json` 中 `prompt_profile` 的值
+   - `prompt_profile == "seedance"` → dispatch `split-episodes-seedance`（一次拆完全集，不问字数）
+   - 否则 → 走标准手动拆分流程（询问字数）
 3. 目标集 drafts/ 中间文件不存在？ → **阶段 3**
    - generation_mode ∈ {storyboard, grid}: `drafts/episode_{N}/step1_segments.md`
    - generation_mode == reference_video: `drafts/episode_{N}/step1_reference_units.md`
