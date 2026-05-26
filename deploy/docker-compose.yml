@@ -11,7 +11,7 @@ services:
       - ./vertex_keys:/app/vertex_keys
       - ./claude_data:/root/.claude
       - /home/lcy/.local/bin/dreamina:/usr/local/bin/dreamina
-      - /home/lcy/.dreamina:/root/.dreamina
+      - /home/lcy/.local/share/dreamina:/root/.local/share/dreamina
     environment:
       - DREAMINA_CLI=/usr/local/bin/dreamina
     security_opt:
