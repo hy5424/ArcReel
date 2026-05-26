@@ -10,6 +10,7 @@ PROVIDER_OPENAI = "openai"
 PROVIDER_VIDU = "vidu"
 PROVIDER_NEWAPI = "newapi"
 PROVIDER_ANTHROPIC = "anthropic"
+PROVIDER_DREAMINA = "dreamina"
 
 CallType = Literal["image", "video", "text"]
 CALL_TYPE_IMAGE: CallType = "image"

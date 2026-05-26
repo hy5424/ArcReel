@@ -46,3 +46,9 @@ from lib.image_backends.vidu import ViduImageBackend
 from lib.providers import PROVIDER_VIDU
 
 register_backend(PROVIDER_VIDU, ViduImageBackend)
+
+# Dreamina — 即梦
+from lib.image_backends.dreamina import DreaminaImageBackend  # noqa: E402
+from lib.providers import PROVIDER_DREAMINA  # noqa: E402
+
+register_backend(PROVIDER_DREAMINA, DreaminaImageBackend)

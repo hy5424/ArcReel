@@ -3,6 +3,7 @@
 from lib.providers import (
     PROVIDER_ARK,
     PROVIDER_ARK_AGENT_PLAN,
+    PROVIDER_DREAMINA,
     PROVIDER_GEMINI,
     PROVIDER_GROK,
     PROVIDER_NEWAPI,
@@ -63,3 +64,8 @@ from lib.providers import PROVIDER_VIDU  # noqa: E402
 from lib.video_backends.vidu import ViduVideoBackend  # noqa: E402
 
 register_backend(PROVIDER_VIDU, ViduVideoBackend)
+
+# Dreamina — 即梦 Seedance 2.0
+from lib.video_backends.dreamina import DreaminaVideoBackend  # noqa: E402
+
+register_backend(PROVIDER_DREAMINA, DreaminaVideoBackend)

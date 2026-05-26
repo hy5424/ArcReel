@@ -6,6 +6,9 @@ FROM node:22-slim AS frontend-builder
 WORKDIR /build/frontend
 
 # 启用 corepack；pnpm 版本由 frontend/package.json 的 packageManager 字段固定
+# 关闭交互式下载确认，否则 docker build 这种非 TTY 环境会卡在
+# "Corepack is about to download ..." 直到超时
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 
 # 配置 npm 国内镜像源 (阿里云)
@@ -31,25 +34,31 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
+    bubblewrap \
+    socat \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# 下载 uv 独立二进制 (~25MB，比拉 ghcr 镜像快)
-ADD https://gh.ddlc.top/https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
-RUN tar -xzf /tmp/uv.tar.gz -C /usr/local/bin --strip-components=1 && \
-    chmod +x /usr/local/bin/uv && \
-    rm /tmp/uv.tar.gz
+# 配置 pip 国内镜像并安装 uv (替代从 ghcr.io 拉取完整镜像)
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
+    pip install uv
 
 WORKDIR /app
 
 # 禁用 Python 输出缓冲，确保日志实时输出到 Docker logs
 ENV PYTHONUNBUFFERED=1
 
+# 默认时区，可由 docker-compose / 运行时 -e TZ=... 覆盖
+ENV TZ=Asia/Shanghai
+
 # uv 使用国内 PyPI 镜像
 ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
 
 # 先复制依赖和包元数据文件，利用缓存
+# BuildKit cache mount 缓存 uv 下载的包，跨构建复用
 COPY pyproject.toml uv.lock README.md ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
 # 复制应用代码
 COPY lib/ lib/

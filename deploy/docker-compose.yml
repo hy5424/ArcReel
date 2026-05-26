@@ -10,6 +10,10 @@ services:
       - ./projects:/app/projects
       - ./vertex_keys:/app/vertex_keys
       - ./claude_data:/root/.claude
+      - /home/lcy/.local/bin/dreamina:/usr/local/bin/dreamina
+      - /home/lcy/.dreamina:/root/.dreamina
+    environment:
+      - DREAMINA_CLI=/usr/local/bin/dreamina
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:1241/health"]
