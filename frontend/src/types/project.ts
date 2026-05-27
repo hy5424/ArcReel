@@ -127,6 +127,7 @@ export interface ProjectData {
   /** Prompt generation profile: "standard" (default) or "seedance" (导演模式) */
   prompt_profile?: "standard" | "seedance";
   video_generate_audio?: boolean | null;
+  timbres?: Record<string, { description?: string; audio_file?: string; gender?: string; age_range?: string }>;
   text_backend_script?: string | null;
   text_backend_overview?: string | null;
   text_backend_style?: string | null;

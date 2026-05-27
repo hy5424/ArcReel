@@ -48,6 +48,7 @@ export function CharacterCard({
   onRestoreVersion,
   onReload,
   generating = false,
+  timbres,
 }: CharacterCardProps) {
   const { t } = useTranslation(["dashboard", "assets"]);
   const sheetFp = useProjectsStore(

@@ -50,7 +50,7 @@ export function TimbresPage({ projectName, timbres, onUpdateTimbre, onAddTimbre,
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
-      <GalleryToolbar title={t("dashboard:timbres")} count={entries.length} onAdd={() => setAdding(true)} />
+      <GalleryToolbar title={t("dashboard:timbres")} count={entries.length} onAdd={() => setAdding(true)} onPickFromLibrary={() => {}} />
       <div className="px-5 py-5">
         {entries.length === 0 ? (
           <GalleryEmptyState icon={<Music className="h-6 w-6" />} label={t("dashboard:timbres")} hint="上传音色参考音频" onClick={() => setAdding(true)} />

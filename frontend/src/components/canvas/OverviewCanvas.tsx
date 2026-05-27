@@ -285,7 +285,7 @@ export function OverviewCanvas({ projectName, projectData }: OverviewCanvasProps
             {/* Asset progress — characters / scenes / props */}
             {status && (
               <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {(["characters", "scenes", "props", "timbres"] as const).map((key) => {
+                {(["characters", "scenes", "props"] as const).map((key) => {
                   const cat = status[key] as
                     | { total: number; completed: number }
                     | undefined;
@@ -436,7 +436,7 @@ export function OverviewCanvas({ projectName, projectData }: OverviewCanvasProps
                     rows={[
                       { label: t("storyboard"), value: formatCost(projectTotals.actual.image) },
                       { label: t("video"), value: formatCost(projectTotals.actual.video) },
-                      ...(["characters", "scenes", "props", "timbres"] as const)
+                      ...(["characters", "scenes", "props"] as const)
                         .map((kind) => {
                           const bucket = projectTotals.actual[kind];
                           if (bucket == null) return null;
