@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Edit2, Trash2, User as UserIcon, Landmark, Package } from "lucide-react";
+import { Edit2, Landmark, Music, Package, Trash2, User as UserIcon } from "lucide-react";
 import { API } from "@/api";
 import { formatDate } from "@/utils/date-format";
 import type { Asset } from "@/types/asset";

@@ -45,6 +45,7 @@ const EMPTY_KEY: Record<AssetType, string> = {
   character: "library_empty_character",
   scene: "library_empty_scene",
   prop: "library_empty_prop",
+  timbre: "library_empty_timbre",
 };
 
 const HEADER_GLOW_STYLE = ambientGlowStyle({ at: "30% 0%", intensity: 0.08 });
