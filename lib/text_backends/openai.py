@@ -232,8 +232,9 @@ async def _json_object_attempt(
         warn_if_truncated(getattr(choice, "finish_reason", None), provider=provider_name, model=model)
         return TextGenerationResult(
             text=text,
+            provider=provider_name,
             model=model,
-            usage_tokens=output_tokens,
+            output_tokens=output_tokens,
         )
 
     logger.warning("json_object 返回非 JSON，降级到 Instructor")
