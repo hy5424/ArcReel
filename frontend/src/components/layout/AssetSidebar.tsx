@@ -100,22 +100,21 @@ export function AssetSidebar({ className }: AssetSidebarProps) {
       path: "/scenes",
       label: t("dashboard:workspace_nav_scenes"),
       icon: Landmark,
-  Music,
       meta: sceneCount,
     },
     {
+      key: "props",
+      path: "/props",
+      label: t("dashboard:workspace_nav_props"),
+      icon: Package,
+      meta: propCount,
+    },
     {
       key: "timbres",
       path: "/timbres",
       label: t("dashboard:workspace_nav_timbres"),
       icon: Music,
       meta: timbreCount,
-    },
-      key: "props",
-      path: "/props",
-      label: t("dashboard:workspace_nav_props"),
-      icon: Package,
-      meta: propCount,
     },
   ];
 
