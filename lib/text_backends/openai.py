@@ -92,7 +92,7 @@ class OpenAITextBackend:
                     exc,
                 )
                 # DeepSeek 等供应商不支持 json_schema，但支持 json_object
-                return await _json_object_attempt(self._client, self._model, request, messages)
+                return await _json_object_attempt(self._client, self._model, request, messages, provider_name=self.name)
             raise
 
         usage = response.usage
@@ -190,6 +190,7 @@ async def _json_object_attempt(
     model: str,
     request: TextGenerationRequest,
     messages: list[dict],
+    provider_name: str = "openai",
 ) -> TextGenerationResult:
     """DeepSeek 等供应商不支持 json_schema，但支持 json_object 模式。
 
@@ -228,7 +229,7 @@ async def _json_object_attempt(
     output_tokens = usage.completion_tokens if usage else None
 
     if _is_valid_json(text):
-        warn_if_truncated(getattr(choice, "finish_reason", None), text, model)
+        warn_if_truncated(getattr(choice, "finish_reason", None), provider=provider_name, model=model)
         return TextGenerationResult(
             text=text,
             model=model,
