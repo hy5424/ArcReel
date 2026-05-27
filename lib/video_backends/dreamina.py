@@ -273,14 +273,17 @@ class DreaminaVideoBackend:
         if m:
             timbre_line = m.group(1)
             # 匹配 @角色 的音色参考 @音色名 模式
-            for tm in re.finditer(r"的音色参考\s+@(\S+)", timbre_line):
+            seen_timbres: set[str] = set()
+            for tm in re.finditer(r"的音色参考\s+@([\w一-鿿-]+)", timbre_line):
                 timbre_name = tm.group(1)
-                audio_idx = len(audio_files) + 1
+                if timbre_name in seen_timbres:
+                    continue
+                seen_timbres.add(timbre_name)
                 # 从 project.json 查找音色音频文件
                 audio_path = self._resolve_timbre_audio(request, timbre_name)
                 if audio_path:
                     audio_files.append(audio_path)
-                    timbre_map[f"@{timbre_name}"] = f"音频{audio_idx}"
+                    timbre_map[f"@{timbre_name}"] = f"音频{len(audio_files)}"
             # prompt 中替换 @音色名 → 音频N
             for old, new in timbre_map.items():
                 prompt = prompt.replace(old, new)
