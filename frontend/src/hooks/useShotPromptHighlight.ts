@@ -43,13 +43,17 @@ export function tokenizePrompt(text: string, lookup: MentionLookup): Token[] {
       continue;
     }
 
-    // Seedance markers → whole line
+    // Seedance markers → colour the marker prefix, then parse rest for @mentions
     if (FORBIDDEN_RE.test(piece)) {
-      tokens.push({ kind: "seedance_forbidden", text: piece });
+      const m = piece.match(FORBIDDEN_RE)!;
+      tokens.push({ kind: "seedance_forbidden", text: m[0] });
+      if (piece.length > m[0].length) pushMentionTokens(tokens, piece.slice(m[0].length), lookup);
       continue;
     }
     if (POSITION_RE.test(piece)) {
-      tokens.push({ kind: "seedance_position", text: piece });
+      const m = piece.match(POSITION_RE)!;
+      tokens.push({ kind: "seedance_position", text: m[0] });
+      if (piece.length > m[0].length) pushMentionTokens(tokens, piece.slice(m[0].length), lookup);
       continue;
     }
 
@@ -58,13 +62,19 @@ export function tokenizePrompt(text: string, lookup: MentionLookup): Token[] {
     if (tbMatch) {
       // leading meta prefix: "无水印无字幕, "
       const metaMatch = piece.match(META_RE);
+      const afterMeta = metaMatch ? piece.slice(metaMatch[0].length) : piece;
       if (metaMatch) {
         tokens.push({ kind: "seedance_meta", text: metaMatch[0] });
-        tokens.push({ kind: "seedance_timeblock", text: piece.slice(metaMatch[0].length) });
-        continue;
       }
-      // whole line as timeblock
-      tokens.push({ kind: "seedance_timeblock", text: piece });
+      // Time block prefix: {0-X秒 |  — 后续内容可含 @角色，走 mention 解析
+      const tbHdr = afterMeta.match(/^\{(\d+-\d+秒)\s*\|\s*/);
+      if (tbHdr) {
+        tokens.push({ kind: "seedance_timeblock", text: tbHdr[0] });
+        const rest = afterMeta.slice(tbHdr[0].length);
+        pushMentionTokens(tokens, rest, lookup);
+      } else {
+        tokens.push({ kind: "seedance_timeblock", text: afterMeta });
+      }
       continue;
     }
 
