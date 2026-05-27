@@ -105,8 +105,11 @@ MESSAGES = {
     "project_scene_not_found": "Không tìm thấy cảnh '{name}'",
     "project_scene_deleted": "Đã xóa cảnh '{name}'",
     "prop_already_exists": "Đạo cụ '{name}' đã tồn tại",
+    "timbre_already_exists": "Âm sắc "{name}" đã tồn tại",
     "prop_not_found": "Không tìm thấy đạo cụ '{name}'",
+    "timbre_not_found": "Không tìm thấy âm sắc "{name}"",
     "prop_deleted": "Đã xóa đạo cụ '{name}'",
+    "timbre_deleted": "Âm sắc "{name}" đã xóa",
     # API Keys
     "jwt_auth_required": "API Key không được phép thực hiện thao tác này, vui lòng dùng xác thực JWT",
     "api_key_name_exists": "Tên '{name}' đã tồn tại",

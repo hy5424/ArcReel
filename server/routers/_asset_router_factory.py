@@ -45,6 +45,11 @@ _I18N_KEYS: dict[str, dict[str, str]] = {
         "not_found": "prop_not_found",
         "deleted": "prop_deleted",
     },
+    "timbre": {
+        "exists": "timbre_already_exists",
+        "not_found": "timbre_not_found",
+        "deleted": "timbre_deleted",
+    },
 }
 
 

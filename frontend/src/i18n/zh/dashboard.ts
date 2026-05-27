@@ -204,6 +204,7 @@ export default {
   'characters_count': '角色 ({{count}})',
   'scenes': '场景',
   'props': '道具',
+  'timbres': '音色',
   'no_characters_hint': '暂无角色，点击下方按钮添加',
   'no_characters_hint_clickable': '暂无角色，点此添加',
   'no_scenes_hint_clickable': '暂无场景，点此添加',

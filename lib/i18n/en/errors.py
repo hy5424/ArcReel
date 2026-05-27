@@ -105,8 +105,11 @@ MESSAGES = {
     "project_scene_not_found": "Scene '{name}' not found",
     "project_scene_deleted": "Scene '{name}' deleted",
     "prop_already_exists": "Prop '{name}' already exists",
+    "timbre_already_exists": "Timbre "{name}" already exists",
     "prop_not_found": "Prop '{name}' not found",
+    "timbre_not_found": "Timbre "{name}" not found",
     "prop_deleted": "Prop '{name}' deleted",
+    "timbre_deleted": "Timbre "{name}" deleted",
     # API Keys
     "jwt_auth_required": "API Key is not authorized to perform this action, please use JWT authentication",
     "api_key_name_exists": "Name '{name}' already exists",

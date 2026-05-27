@@ -105,8 +105,11 @@ MESSAGES = {
     "project_scene_not_found": "场景「{name}」不存在",
     "project_scene_deleted": "场景「{name}」已删除",
     "prop_already_exists": "道具「{name}」已存在",
+    "timbre_already_exists": "音色「{name}」已存在",
     "prop_not_found": "道具「{name}」不存在",
+    "timbre_not_found": "音色「{name}」不存在",
     "prop_deleted": "道具「{name}」已删除",
+    "timbre_deleted": "音色「{name}」已删除",
     # API Keys
     "jwt_auth_required": "API Key 无权执行此操作，请使用 JWT 认证",
     "api_key_name_exists": "名称 '{name}' 已存在",

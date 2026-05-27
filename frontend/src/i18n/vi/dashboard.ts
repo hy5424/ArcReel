@@ -204,6 +204,7 @@ export default {
   'characters_count': 'Nhân vật ({{count}})',
   'scenes': 'Cảnh',
   'props': 'Đạo cụ',
+  'timbres': 'Âm sắc',
   'no_characters_hint': 'Chưa có nhân vật, nhấn nút bên dưới để thêm.',
   'no_characters_hint_clickable': 'Chưa có nhân vật, nhấn để thêm',
   'no_scenes_hint_clickable': 'Chưa có cảnh, nhấn để thêm',

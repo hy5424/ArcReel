@@ -203,6 +203,7 @@ export default {
   'characters_count': 'Characters ({{count}})',
   'scenes': 'Scenes',
   'props': 'Props',
+  'timbres': 'Timbres',
   'no_characters_hint': 'No characters yet, click the button below to add.',
   'no_characters_hint_clickable': 'No characters yet, click to add',
   'no_scenes_hint_clickable': 'No scenes yet, click to add',
