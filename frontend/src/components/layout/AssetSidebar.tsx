@@ -8,6 +8,7 @@ import {
   BookOpen,
   Users,
   Landmark,
+  Music,
   Package,
   Plus,
   Search,
@@ -47,6 +48,7 @@ export function AssetSidebar({ className }: AssetSidebarProps) {
   const characterCount = Object.keys(currentProjectData?.characters ?? {}).length;
   const sceneCount = Object.keys(currentProjectData?.scenes ?? {}).length;
   const propCount = Object.keys(currentProjectData?.props ?? {}).length;
+  const timbreCount = Object.keys(currentProjectData?.timbres ?? {}).length;
   const episodes = currentProjectData?.episodes ?? [];
 
   const sourceFilesVersion = useAppStore((s) => s.sourceFilesVersion);
@@ -98,9 +100,17 @@ export function AssetSidebar({ className }: AssetSidebarProps) {
       path: "/scenes",
       label: t("dashboard:workspace_nav_scenes"),
       icon: Landmark,
+  Music,
       meta: sceneCount,
     },
     {
+    {
+      key: "timbres",
+      path: "/timbres",
+      label: t("dashboard:workspace_nav_timbres"),
+      icon: Music,
+      meta: timbreCount,
+    },
       key: "props",
       path: "/props",
       label: t("dashboard:workspace_nav_props"),

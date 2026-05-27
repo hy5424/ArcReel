@@ -1198,6 +1198,7 @@ export default {
   'workspace_nav_characters': 'Nhân vật',
   'workspace_nav_overview': 'Tổng quan',
   'workspace_nav_props': 'Đạo cụ',
+  'workspace_nav_timbres': 'Âm sắc',
   'workspace_nav_scenes': 'Cảnh',
   'workspace_nav_source': 'Tệp gốc',
   'workspace_notifications_title': 'Thông báo không gian làm việc',

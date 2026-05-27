@@ -1148,6 +1148,7 @@ export default {
   'workspace_nav_characters': 'Characters',
   'workspace_nav_scenes': 'Scenes',
   'workspace_nav_props': 'Props',
+  'workspace_nav_timbres': 'Timbres',
 
   // ---- Projects lobby · Darkroom ----
   'lobby_brand_subtitle': 'Studio',

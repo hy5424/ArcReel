@@ -1149,6 +1149,7 @@ export default {
   'workspace_nav_characters': '角色集',
   'workspace_nav_scenes': '场景库',
   'workspace_nav_props': '道具库',
+  'workspace_nav_timbres': '音色',
 
   // ---- 项目大厅 · Darkroom ----
   'lobby_brand_subtitle': '工作台',
