@@ -650,20 +650,19 @@ class API {
   // ==================== 音色管理 ====================
 
   static async addProjectTimbre(projectName: string, name: string, description: string, gender?: string, ageRange?: string, audioFile?: File): Promise<SuccessResponse> {
-    const form = new FormData();
-    form.append("name", name);
-    form.append("description", description ?? "");
-    form.append("gender", gender ?? "");
-    form.append("age_range", ageRange ?? "");
-    if (audioFile) form.append("audio", audioFile);
-    const url = `${API_BASE}/projects/${encodeURIComponent(projectName)}/timbres`;
-    const response = await fetch(url, withAuth({ method: "POST", body: form }));
-    if (!response.ok) {
-      handleUnauthorized(response);
-      const error = (await response.json().catch(() => ({ detail: response.statusText }))) as { detail?: string };
-      throw new Error(typeof error.detail === "string" ? error.detail : "请求失败");
+    // 1. 创建音色条目 (JSON)
+    const result = await this.request<SuccessResponse>(
+      `/projects/${encodeURIComponent(projectName)}/timbres`,
+      { method: "POST", body: JSON.stringify({ name, description, gender: gender ?? "", age_range: ageRange ?? "" }) },
+    );
+    // 2. 如有音频文件，单独上传
+    if (audioFile) {
+      const form = new FormData();
+      form.append("file", audioFile);
+      const url = `${API_BASE}/projects/${encodeURIComponent(projectName)}/timbres/${encodeURIComponent(name)}/sheet`;
+      await fetch(url, withAuth({ method: "POST", body: form }));
     }
-    return response.json() as Promise<SuccessResponse>;
+    return result;
   }
 
   static async updateProjectTimbre(projectName: string, timbreName: string, updates: Record<string, unknown>): Promise<SuccessResponse> {
