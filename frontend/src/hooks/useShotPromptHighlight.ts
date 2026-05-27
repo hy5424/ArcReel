@@ -30,6 +30,8 @@ const SHOT_HEADER_RE = /^Shot\s+\d+\s*\(\s*\d+\s*s\s*\)\s*:\s*/i;
 const POSITION_RE = /^【站位】[：:]/;
 const FORBIDDEN_RE = /^【禁止标签】[：:]/;
 const TIMEBLOCK_RE = /^\{+(\d+-\d+秒)\s*\|\s*/;
+// 只匹配时间部分，不含大括号
+const TIME_ONLY_RE = /\{+(\d+-\d+秒)/;
 const META_RE = /^无水印无字幕[，,]\s*/;
 
 export function tokenizePrompt(text: string, lookup: MentionLookup): Token[] {
@@ -66,14 +68,16 @@ export function tokenizePrompt(text: string, lookup: MentionLookup): Token[] {
       if (metaMatch) {
         tokens.push({ kind: "seedance_meta", text: metaMatch[0] });
       }
-      // Time block prefix: {0-X秒 |  — 后续内容可含 @角色，走 mention 解析
-      const tbHdr = afterMeta.match(/^\{(\d+-\d+秒)\s*\|\s*/);
-      if (tbHdr) {
-        tokens.push({ kind: "seedance_timeblock", text: tbHdr[0] });
-        const rest = afterMeta.slice(tbHdr[0].length);
+      // Time block: { as text, 0-X秒 as coloured, rest as text+mentions
+      const tmMatch = afterMeta.match(TIME_ONLY_RE);
+      if (tmMatch && typeof tmMatch.index === "number") {
+        const braceLen = tmMatch[0].length - tmMatch[1].length; // leading { or {{
+        if (braceLen > 0) tokens.push({ kind: "text", text: afterMeta.slice(0, braceLen) });
+        tokens.push({ kind: "seedance_timeblock", text: tmMatch[1] });
+        const rest = afterMeta.slice(tmMatch[0].length);
         pushMentionTokens(tokens, rest, lookup);
       } else {
-        tokens.push({ kind: "seedance_timeblock", text: afterMeta });
+        pushMentionTokens(tokens, afterMeta, lookup);
       }
       continue;
     }
