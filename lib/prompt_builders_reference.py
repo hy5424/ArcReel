@@ -158,6 +158,7 @@ def build_seedance_reference_prompt(
     max_duration: int | None = None,
     aspect_ratio: str = "9:16",
     target_language: str = "中文",
+    timbres: dict | None = None,
 ) -> str:
     """种子导演模式的参考生视频 prompt 构建器。
 
@@ -167,6 +168,16 @@ def build_seedance_reference_prompt(
     character_names = list(characters.keys())
     scene_names = list(scenes.keys())
     prop_names = list(props.keys())
+
+    # 角色-音色绑定提示
+    timbre_bindings = []
+    for name, info in characters.items():
+        tid = (info.get("timbre_id") or info.get("voice_style")) if isinstance(info, dict) else None
+        if tid and (timbres or {}).get(tid):
+            timbre_bindings.append(f"{name} → {tid}")
+    bindings_block = ""
+    if timbre_bindings:
+        bindings_block = "\n角色音色绑定：\n" + "\n".join(f"- {b}" for b in timbre_bindings) + "\n（以上角色已有预设音色，【音色】行请使用绑定的音色名）\n"
 
     durations_desc = "/".join(str(d) for d in supported_durations) + "s"
     max_duration_line = (
@@ -178,7 +189,7 @@ def build_seedance_reference_prompt(
 
     return f"""# 身份
 
-你是电影导演。本任务是为「参考生视频 + 种子导演」模式产出 JSON 剧本。
+{bindings_block}你是电影导演。本任务是为「参考生视频 + 种子导演」模式产出 JSON 剧本。
 
 将每个 shot 的 text 字段写成完整的即梦 Seedance 2.0 导演格式提示词。
 

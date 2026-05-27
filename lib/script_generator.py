@@ -138,7 +138,7 @@ class ScriptGenerator:
 
         if gen_mode == "reference_video":
             if self.prompt_profile == "seedance":
-                prompt = build_seedance_reference_prompt(
+                prompt = build_seedance_reference_prompt(timbres=timbres, 
                     project_overview=self.project_json.get("overview", {}),
                     style=self.project_json.get("style", ""),
                     style_description=self.project_json.get("style_description", ""),
@@ -279,7 +279,7 @@ class ScriptGenerator:
 
         if gen_mode == "reference_video":
             if self.prompt_profile == "seedance":
-                return build_seedance_reference_prompt(
+                return build_seedance_reference_prompt(timbres=timbres, 
                     project_overview=self.project_json.get("overview", {}),
                     style=self.project_json.get("style", ""),
                     style_description=self.project_json.get("style_description", ""),
