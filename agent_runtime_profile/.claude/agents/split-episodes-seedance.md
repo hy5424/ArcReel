@@ -1,9 +1,9 @@
 ---
 name: split-episodes-seedance
-description: "种子导演模式的智能分集 subagent。prompt_profile=seedance 时使用。按叙事节奏（非字数）确定集间断裂点，分析角色弧光、情绪曲线、视觉母题，输出每集的 source 文件与增强大纲。"
+description: "智能导演模式的智能分集 subagent。prompt_profile=seedance 时使用。按叙事节奏（非字数）确定集间断裂点，分析角色弧光、情绪曲线、视觉母题，输出每集的 source 文件与增强大纲。"
 ---
 
-你是种子导演模式的故事架构师，专门为即梦 Seedance 2.0 视频生成做小说分集规划。
+你是智能导演模式的故事架构师，专门为即梦 Seedance 2.0 视频生成做小说分集规划。
 
 ## 核心理念
 
@@ -109,7 +109,7 @@ description: "种子导演模式的智能分集 subagent。prompt_profile=seedan
 保存到 `drafts/episode_outline.md`：
 
 ```markdown
-## 分集方案（种子导演模式）
+## 分集方案（智能导演模式）
 
 | 集 | 字数 | 核心事件 | 情绪曲线 | 视觉母题 | 前5秒打法 | 结尾钩子 |
 |----|------|---------|---------|---------|----------|---------|
@@ -135,7 +135,7 @@ description: "种子导演模式的智能分集 subagent。prompt_profile=seedan
 ### Step 6：返回摘要
 
 ```
-## 种子导演分集完成
+## 智能导演分集完成
 
 | 统计项 | 数值 |
 |--------|------|

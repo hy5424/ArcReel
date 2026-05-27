@@ -49,7 +49,7 @@ agent session 的当前工作目录（cwd）已绑定到当前项目根，**所�
 | prompt_profile | 模式 | 分集 | 拆分 | 剧本 | 产出 |
 |---------------|------|------|------|------|------|
 | `standard`（默认） | 标准 | 主 agent 手动拆（字数） | `split-narration-segments` | `create-episode-script` | action/camera_motion |
-| `seedance` | 种子导演 | `split-episodes-seedance`（叙事节奏） | `split-narration-seedance` | `create-seedance-script` | video_prompt_override |
+| `seedance` | 智能导演 | `split-episodes-seedance`（叙事节奏） | `split-narration-seedance` | `create-seedance-script` | video_prompt_override |
 
 种子模式三个阶段全部由 subagent 自主完成：分集按叙事节奏一次性全拆（不询问字数）、拆分标注情绪/声线、剧本生成输出完整种子格式。
 

@@ -110,7 +110,7 @@ description: 将小说转换为短视频的端到端工作流编排器。当用�
 4. 分析 nearby_breakpoints，建议自然断点
 5. 用户确认后，先 dry run 验证，再实际执行 `split_episode.py`
 
-### 种子模式（`prompt_profile == "seedance"`）
+### 智能导演模式（`prompt_profile == "seedance"`）
 
 dispatch `split-episodes-seedance` subagent，一次性按叙事节奏拆出全部集数，不询问字数。
 6. 确认无误后实际执行（去掉 `--dry-run`）

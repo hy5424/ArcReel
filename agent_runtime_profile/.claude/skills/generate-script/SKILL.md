@@ -70,8 +70,8 @@ MCP 工具内部通过 `ScriptGenerator` 完成以下步骤：
 | profile | narration builder | video_prompt 产出 |
 |---------|------------------|------------------|
 | `standard` | `build_narration_prompt` | action/camera_motion/ambiance_audio/dialogue |
-| `seedance` | `build_seedance_narration_prompt` | 同上 + video_prompt_override（种子导演格式） |
+| `seedance` | `build_seedance_narration_prompt` | 同上 + video_prompt_override（智能导演格式） |
 
-种子模式下 `video_prompt_override` 非空时，所有视频后端直接使用该字段。
+智能导演模式下 `video_prompt_override` 非空时，所有视频后端直接使用该字段。
 
 > 三种生成模式的数据路径、预处理 subagent、schema 选择详见 `.claude/references/generation-modes.md`。
