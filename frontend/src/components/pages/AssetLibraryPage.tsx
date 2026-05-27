@@ -57,7 +57,7 @@ export function AssetLibraryPage() {
 
   const activeTab = useMemo((): AssetType => {
     const tab = new URLSearchParams(search).get("tab");
-    return tab === "scene" || tab === "prop" ? tab : "character";
+    return tab === "scene" || tab === "prop" || tab === "timbre" ? tab : "character";
   }, [search]);
 
   const writeQuery = useCallback((patch: { tab?: AssetType; q?: string }) => {
