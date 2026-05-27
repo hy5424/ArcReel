@@ -266,25 +266,22 @@ class DreaminaVideoBackend:
         # 去掉公共层追加的反向提示词（智能导演模式自带【禁止标签】，冲突）
         prompt = re.sub(r"\s*禁止出现：BGM、文字字幕、水印。?$", "", prompt)
 
-        # 解析【音色】行：图片N 的音色参考 图片M → 图片N 的音色参考 音频M
+        # 解析【音色】行，提取音色引用并查找音频文件
         audio_files: list[Path] = []
-        timbre_map: dict[str, str] = {}  # 图片M → 音频编号
+        timbre_map: dict[str, str] = {}
         m = re.search(r"【音色】[：:]([^\]]*?)(?:\n|【|$)", prompt)
         if m:
             timbre_line = m.group(1)
-            # 提取 图片N 的音色参考 图片M 模式
-            for tm in re.finditer(r"图片(\d+)\s*的\s*音色参考\s*图片(\d+)", timbre_line):
-                timbre_img = f"图片{tm.group(2)}"
+            # 匹配 @角色 的音色参考 @音色名 模式
+            for tm in re.finditer(r"的音色参考\s+@(\S+)", timbre_line):
+                timbre_name = tm.group(1)
                 audio_idx = len(audio_files) + 1
-                timbre_map[timbre_img] = f"音频{audio_idx}"
-                # 从 ref_images 找对应音频文件
-                ref_idx = int(tm.group(2)) - 1
-                if ref_idx < len(ref_images):
-                    # 尝试从 project 查找 timbre 音频文件
-                    audio_path = self._resolve_timbre_audio(request, ref_images[ref_idx])
-                    if audio_path:
-                        audio_files.append(audio_path)
-            # prompt 中替换：图片M → 音频N（在【音色】行内）
+                # 从 project.json 查找音色音频文件
+                audio_path = self._resolve_timbre_audio(request, timbre_name)
+                if audio_path:
+                    audio_files.append(audio_path)
+                    timbre_map[f"@{timbre_name}"] = f"音频{audio_idx}"
+            # prompt 中替换 @音色名 → 音频N
             for old, new in timbre_map.items():
                 prompt = prompt.replace(old, new)
 
@@ -316,8 +313,8 @@ class DreaminaVideoBackend:
                      submit_id, len(ref_images))
         return submit_id
 
-    def _resolve_timbre_audio(self, request: VideoGenerationRequest, ref_image: Path) -> Path | None:
-        """从参考图路径反查 timbre 音频文件。"""
+    def _resolve_timbre_audio(self, request: VideoGenerationRequest, timbre_name: str) -> Path | None:
+        """从 project.json 查找音色的音频文件。"""
         if not request.project_name:
             return None
         try:
@@ -328,12 +325,11 @@ class DreaminaVideoBackend:
             with open(pm_path) as f:
                 proj = _json.load(f)
             timbres = proj.get("timbres") or {}
-            # 按文件名匹配：参考图的 stem 匹配 timbre 的 audio_file
-            stem = ref_image.stem
-            for name, info in timbres.items():
-                audio_file = info.get("audio_file") if isinstance(info, dict) else None
-                if audio_file and stem in audio_file:
-                    audio_path = Path("/app/projects") / request.project_name / audio_file
+            info = timbres.get(timbre_name)
+            if isinstance(info, dict):
+                audio_rel = info.get("audio_file", "")
+                if audio_rel:
+                    audio_path = Path("/app/projects") / request.project_name / audio_rel
                     if audio_path.exists():
                         return audio_path
         except Exception:
