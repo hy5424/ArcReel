@@ -352,8 +352,9 @@ def build_seedance_narration_prompt(
     # 角色-音色绑定提示
     timbre_bindings = []
     for name, info in characters.items():
-        tid = info.get("timbre_id") if isinstance(info, dict) else None
-        if tid:
+        tid = (info.get("timbre_id") or info.get("voice_style")) if isinstance(info, dict) else None
+        # 仅当值匹配已注册音色名时才视为绑定
+        if tid and (timbres or {}).get(tid):
             timbre_bindings.append(f"{name} → {tid}")
     bindings_block = ""
     if timbre_bindings:

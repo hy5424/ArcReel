@@ -18,12 +18,13 @@ interface Props {
   onSaveCharacter: (name: string, payload: { description: string; voiceStyle: string; referenceFile?: File | null }) => Promise<void>;
   onGenerateCharacter: (name: string) => void;
   onAddCharacter: (name: string, description: string, voiceStyle: string, referenceFile?: File | null) => Promise<void>;
+  timbres?: Record<string, unknown>;
   onRestoreCharacterVersion?: () => Promise<void> | void;
   onRefreshProject?: () => Promise<void> | void;
   generatingCharacterNames?: Set<string>;
 }
 
-export function CharactersPage({ projectName, characters, onSaveCharacter, onGenerateCharacter, onAddCharacter, onRestoreCharacterVersion, onRefreshProject, generatingCharacterNames }: Props) {
+export function CharactersPage({ projectName, characters, timbres, onSaveCharacter, onGenerateCharacter, onAddCharacter, onRestoreCharacterVersion, onRefreshProject, generatingCharacterNames }: Props) {
   const { t } = useTranslation(["dashboard", "assets"]);
   const [adding, setAdding] = useState(false);
   const [picking, setPicking] = useState(false);
@@ -67,7 +68,7 @@ export function CharactersPage({ projectName, characters, onSaveCharacter, onGen
         ) : (
           <div className="grid justify-evenly gap-4 [grid-template-columns:repeat(auto-fill,320px)]">
             {entries.map(([name, char]) => (
-              <CharacterCard key={name} name={name} character={char} projectName={projectName}
+              <CharacterCard key={name} name={name} character={char} projectName={projectName} timbres={timbres}
                 onSave={onSaveCharacter}
                 onGenerate={onGenerateCharacter}
                 onRestoreVersion={onRestoreCharacterVersion}

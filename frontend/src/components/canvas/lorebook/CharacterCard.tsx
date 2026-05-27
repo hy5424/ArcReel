@@ -28,6 +28,7 @@ interface CharacterCardProps {
   onRestoreVersion?: () => Promise<void> | void;
   onReload?: () => Promise<void> | void;
   generating?: boolean;
+  timbres?: Record<string, Record<string, unknown>>;
 }
 
 const FIELD_STYLE: React.CSSProperties = {
@@ -401,15 +402,30 @@ export function CharacterCard({
 
       <div className="mt-3">
         <CapsLabel htmlFor={voiceId}>{t("voice_style")}</CapsLabel>
-        <input
-          id={voiceId}
-          type="text"
-          value={voiceStyle}
-          onChange={(e) => setVoiceStyle(e.target.value)}
-          className="focus-ring mt-1.5 w-full rounded-lg px-3 py-2 text-[13px] outline-none transition-[border-color,box-shadow]"
-          style={FIELD_STYLE}
-          placeholder={t("voice_style_example")}
-        />
+        {timbres && Object.keys(timbres).length > 0 ? (
+          <select
+            id={voiceId}
+            value={voiceStyle}
+            onChange={(e) => setVoiceStyle(e.target.value)}
+            className="focus-ring mt-1.5 w-full rounded-lg px-3 py-2 text-[13px] outline-none transition-[border-color,box-shadow]"
+            style={FIELD_STYLE}
+          >
+            <option value="">（无）</option>
+            {Object.keys(timbres).map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            id={voiceId}
+            type="text"
+            value={voiceStyle}
+            onChange={(e) => setVoiceStyle(e.target.value)}
+            className="focus-ring mt-1.5 w-full rounded-lg px-3 py-2 text-[13px] outline-none transition-[border-color,box-shadow]"
+            style={FIELD_STYLE}
+            placeholder={t("voice_style_example")}
+          />
+        )}
       </div>
 
       {isDirty && (

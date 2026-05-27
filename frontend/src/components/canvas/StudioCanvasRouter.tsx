@@ -470,7 +470,7 @@ export function StudioCanvasRouter() {
       </Route>
 
       <Route path="/characters">
-        <CharactersPage
+        <CharactersPage timbres={currentProjectData?.timbres ?? {}}
           projectName={currentProjectName}
           characters={currentProjectData?.characters ?? {}}
           onSaveCharacter={handleSaveCharacter}
