@@ -50,6 +50,14 @@ ASSET_SPECS: dict[str, AssetSpec] = {
         label_zh="道具",
         extra_string_fields=(),
     ),
+    "timbre": AssetSpec(
+        asset_type="timbre",
+        bucket_key="timbres",
+        sheet_field="audio_file",
+        subdir="timbres",
+        label_zh="音色",
+        extra_string_fields=("gender", "age_range"),
+    ),
 }
 
 

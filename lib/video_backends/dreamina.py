@@ -257,7 +257,7 @@ class DreaminaVideoBackend:
         return submit_id
 
     async def _submit_multimodal2video(self, request: VideoGenerationRequest, ref_images: list[Path]) -> str:
-        """参考生视频模式：将参考图作为 --image 传给 multimodal2video。"""
+        """参考生视频模式：将参考图作为 --image，音色作为 --audio 传给 multimodal2video。"""
         duration = self._coerce_duration(request.duration_seconds)
         ratio = request.aspect_ratio if request.aspect_ratio in _SUPPORTED_RATIOS else "9:16"
 
@@ -266,10 +266,34 @@ class DreaminaVideoBackend:
         # 去掉公共层追加的反向提示词（智能导演模式自带【禁止标签】，冲突）
         prompt = re.sub(r"\s*禁止出现：BGM、文字字幕、水印。?$", "", prompt)
 
-        # 构建 CLI 参数：--image 按顺序排列
+        # 解析【音色】行：图片N 的音色参考 图片M → 图片N 的音色参考 音频M
+        audio_files: list[Path] = []
+        timbre_map: dict[str, str] = {}  # 图片M → 音频编号
+        m = re.search(r"【音色】[：:]([^\]]*?)(?:\n|【|$)", prompt)
+        if m:
+            timbre_line = m.group(1)
+            # 提取 图片N 的音色参考 图片M 模式
+            for tm in re.finditer(r"图片(\d+)\s*的\s*音色参考\s*图片(\d+)", timbre_line):
+                timbre_img = f"图片{tm.group(2)}"
+                audio_idx = len(audio_files) + 1
+                timbre_map[timbre_img] = f"音频{audio_idx}"
+                # 从 ref_images 找对应音频文件
+                ref_idx = int(tm.group(2)) - 1
+                if ref_idx < len(ref_images):
+                    # 尝试从 project 查找 timbre 音频文件
+                    audio_path = self._resolve_timbre_audio(request, ref_images[ref_idx])
+                    if audio_path:
+                        audio_files.append(audio_path)
+            # prompt 中替换：图片M → 音频N（在【音色】行内）
+            for old, new in timbre_map.items():
+                prompt = prompt.replace(old, new)
+
+        # 构建 CLI 参数
         cmd_args = ["multimodal2video"]
         for img in ref_images:
             cmd_args.extend(["--image", str(img)])
+        for af in audio_files:
+            cmd_args.extend(["--audio", str(af)])
         cmd_args.extend([
             "--prompt", prompt,
             "--duration", str(duration),
@@ -291,6 +315,30 @@ class DreaminaVideoBackend:
         logger.info("Dreamina multimodal2video 已提交 submit_id=%s images=%d",
                      submit_id, len(ref_images))
         return submit_id
+
+    def _resolve_timbre_audio(self, request: VideoGenerationRequest, ref_image: Path) -> Path | None:
+        """从参考图路径反查 timbre 音频文件。"""
+        if not request.project_name:
+            return None
+        try:
+            import json as _json
+            pm_path = Path("/app/projects") / request.project_name / "project.json"
+            if not pm_path.exists():
+                return None
+            with open(pm_path) as f:
+                proj = _json.load(f)
+            timbres = proj.get("timbres") or {}
+            # 按文件名匹配：参考图的 stem 匹配 timbre 的 audio_file
+            stem = ref_image.stem
+            for name, info in timbres.items():
+                audio_file = info.get("audio_file") if isinstance(info, dict) else None
+                if audio_file and stem in audio_file:
+                    audio_path = Path("/app/projects") / request.project_name / audio_file
+                    if audio_path.exists():
+                        return audio_path
+        except Exception:
+            pass
+        return None
 
     # ── 轮询 / 下载 ───────────────────────────────────────────────────
 

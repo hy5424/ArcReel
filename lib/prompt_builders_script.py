@@ -312,11 +312,13 @@ _SEEDANCE_FORMAT_SPEC = """【镜号】：E{集}S{两位序号}（末镜加 -end
 
 无水印无字幕，[画风前缀]，无水印无字幕。场景@场景名。
 【站位】：(@角色名 空间位置描述)
+【音色】：@角色名 的音色参考 @音色名，@角色名 的音色参考 @音色名
 {0-X秒 | 镜头：[景别][运镜]。[画面描述。@角色名（情绪描述）："台词"]}
 【禁止标签】：禁止[事项1]。禁止[事项2]。结尾保持静止不漂移。
 
 格式铁律：
 - 【站位】每镜必填，单角色也写
+- 【音色】有台词时必填——列出每个说话角色的音色参考（@角色名 的音色参考 @音色名）。音色名从候选 timbres 列表选取。每镜最多 3 个音色（即梦 --audio 上限 3）。
 - 【禁止标签】每镜必填。每条负面行为以"禁止"开头；结尾静止不漂移无需"禁止"。结尾镜必含防漂移。
 - 分段时间块秒数和 = 镜号时长，每镜 ≥1 块。场景@ 仅切换时写。
 - @角色名（情绪描述）："台词"——情绪描述必填，不拘形式：标签（焦急万分/声如洪钟）、感官比喻（声音尖锐如指甲划过石板）、动作暗示（手指攥紧衣角）均可。画外音 @角色名(O.S.)。所有 @引用后必须加空格。"""
@@ -335,6 +337,7 @@ def build_seedance_narration_prompt(
     default_duration: int | None = None,
     aspect_ratio: str = "9:16",
     target_language: str = "中文",
+    timbres: dict | None = None,
 ) -> str:
     """构建种子导演模式（seedance）的说书 prompt。
 
@@ -383,6 +386,10 @@ def build_seedance_narration_prompt(
 <props>
 {_format_names(props)}
 </props>
+
+<timbres>
+{_format_names(timbres or {})}
+</timbres>
 
 <segments>
 {segments_md}

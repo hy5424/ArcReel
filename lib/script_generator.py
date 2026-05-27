@@ -134,6 +134,7 @@ class ScriptGenerator:
         characters = self.project_json.get("characters", {})
         scenes = self.project_json.get("scenes", {})
         props = self.project_json.get("props", {})
+        timbres = self.project_json.get("timbres", {})
 
         if gen_mode == "reference_video":
             if self.prompt_profile == "seedance":
@@ -169,7 +170,7 @@ class ScriptGenerator:
             schema = ReferenceVideoScript
         elif self.content_mode == "narration":
             if self.prompt_profile == "seedance":
-                prompt = build_seedance_narration_prompt(
+                prompt = build_seedance_narration_prompt(timbres=timbres, 
                     project_overview=self.project_json.get("overview", {}),
                     style=self.project_json.get("style", ""),
                     style_description=self.project_json.get("style_description", ""),
@@ -199,7 +200,7 @@ class ScriptGenerator:
             schema = NarrationEpisodeScript
         else:
             if self.prompt_profile == "seedance":
-                prompt = build_seedance_drama_prompt(
+                prompt = build_seedance_drama_prompt(timbres=timbres, 
                     project_overview=self.project_json.get("overview", {}),
                     style=self.project_json.get("style", ""),
                     style_description=self.project_json.get("style_description", ""),
@@ -274,6 +275,7 @@ class ScriptGenerator:
         characters = self.project_json.get("characters", {})
         scenes = self.project_json.get("scenes", {})
         props = self.project_json.get("props", {})
+        timbres = self.project_json.get("timbres", {})
 
         if gen_mode == "reference_video":
             if self.prompt_profile == "seedance":
@@ -307,7 +309,7 @@ class ScriptGenerator:
             )
         elif self.content_mode == "narration":
             if self.prompt_profile == "seedance":
-                return build_seedance_narration_prompt(
+                return build_seedance_narration_prompt(timbres=timbres, 
                     project_overview=self.project_json.get("overview", {}),
                     style=self.project_json.get("style", ""),
                     style_description=self.project_json.get("style_description", ""),
@@ -335,7 +337,7 @@ class ScriptGenerator:
             )
         else:
             if self.prompt_profile == "seedance":
-                return build_seedance_drama_prompt(
+                return build_seedance_drama_prompt(timbres=timbres, 
                     project_overview=self.project_json.get("overview", {}),
                     style=self.project_json.get("style", ""),
                     style_description=self.project_json.get("style_description", ""),

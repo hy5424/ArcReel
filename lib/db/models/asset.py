@@ -17,9 +17,12 @@ class Asset(TimestampMixin, Base):
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    type: Mapped[str] = mapped_column(String(32), nullable=False)  # character/scene/prop
+    type: Mapped[str] = mapped_column(String(32), nullable=False)  # character/scene/prop/timbre
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str] = mapped_column(Text, default="", nullable=False)
     voice_style: Mapped[str] = mapped_column(Text, default="", nullable=False)
     image_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    audio_file: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    gender: Mapped[str] = mapped_column(String(16), default="", nullable=False)
+    age_range: Mapped[str] = mapped_column(String(32), default="", nullable=False)
     source_project: Mapped[str | None] = mapped_column(String(200), nullable=True)
