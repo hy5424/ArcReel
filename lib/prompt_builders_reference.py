@@ -225,7 +225,7 @@ def build_seedance_reference_prompt(
 ## 基础字段（与标准版相同）
 
 - **unit_id**：保留 E{episode}U{{序号}}
-- **shots**：1-4 个，每个 duration 取 {durations_desc}{max_duration_line}
+- **shots**：每个 unit 固定 1 个 shot；种子模式下单个 shot 已包含完整的分段时间块+站位+禁止标签，多 shot 不必要。shot duration 取 {durations_desc}{max_duration_line}
 - **references**：type + name，name 只能从候选取：
     - character: {", ".join(character_names) or "（无）"}
     - scene: {", ".join(scene_names) or "（无）"}
