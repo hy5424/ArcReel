@@ -97,7 +97,7 @@ mcp__arcreel__get_video_capabilities({})
 #### E<ep>U<idx>
 
 Shot 1 (<d1>s): @[<已注册名>] 动作描述（不写外貌/服装）。
-Shot 2 (<d2>s): ...
+（本 unit 总共 <k> 个 shot，若只有 1 个 shot 则只写 Shot 1，不要强行凑第 2 个）
 ```
 
 > 填值规则：`<di>` 取自 Step 0 查到的 `supported_durations`；`<d1>+<d2>+...+<dk>` 的和宜贴近 `max_duration`（不超过）；若用户设置了 `default_duration`，优先将单 shot 默认值定为该值，特殊情况另议（多 shot 组合贴近 `max_duration` / 单 shot 不足以表达叙事）。
