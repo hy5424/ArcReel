@@ -57,15 +57,17 @@ mcp__arcreel__get_video_capabilities({})
 
 ### Step 2: 按 video_unit 粒度拆分
 
+**先读 `project.json` 确认 `prompt_profile`**：
+- **`prompt_profile == "seedance"`（智能导演模式）**：每个 unit **必须恰好 1 个 shot**。种子模式下单个 shot 已含完整分段时间块+站位+禁止标签，多 shot 无意义。时间/空间/情节切换点→开新 unit。
+- **否则（标准模式）**：一个 unit 内可拆 1-4 个 shot。
+
 **拆分规则**：
 
 - 每个 unit 对应一个**连贯的视频生成片段**：同一时间、同一地点、主体动作连续。
-- 一个 unit 内可拆 1-4 个 shot；shot 表示镜头切换，但共享同一次生成调用。
 - 单 shot 时长只能从 Step 0 查到的 `supported_durations` 中选取。
   优先决策：若 `default_duration` 非 null，单 shot 默认取该值；
   否则或特殊情况下，让 unit 总时长贴近 `max_duration`，不超过上限。
   不要挑最短 / 保守值作为默认。
-- 时间 / 空间 / 情节重大切换点 → 开一个新 unit。
 - 一个 unit 涉及的角色 / 场景 / 道具总数不超过 Step 0 查到的 `max_reference_images`；超出时将次要角色融入背景描述，不进入 references。
 
 **描述规则**：
@@ -113,8 +115,7 @@ Shot 1 (<d1>s): @[<已注册名>] 动作描述（不写外貌/服装）。
 
 | 统计项 | 数值 |
 |--------|------|
-| 总 unit 数 | XX 个 |
-| 总 shot 数 | XX 个 |
+| 总 unit 数 | XX 个（智能导演模式：1 unit = 1 shot） |
 | 预计总时长 | X 分 X 秒 |
 | 涉及角色 | XX 个 |
 | 涉及场景 | XX 个 |
