@@ -22,12 +22,14 @@ export type Token =
   | { kind: "shot_header"; text: string }
   | { kind: "mention"; text: string; name: string; assetKind: MentionKind }
   | { kind: "seedance_position"; text: string }
+  | { kind: "seedance_timbre"; text: string }
   | { kind: "seedance_forbidden"; text: string }
   | { kind: "seedance_timeblock"; text: string }
   | { kind: "seedance_meta"; text: string };
 
 const SHOT_HEADER_RE = /^Shot\s+\d+\s*\(\s*\d+\s*s\s*\)\s*:\s*/i;
 const POSITION_RE = /^【站位】[：:]/;
+const TIMBRE_RE = /^【音色】[：:]/;
 const FORBIDDEN_RE = /^【禁止标签】[：:]/;
 const TIMEBLOCK_RE = /^\{+(\d+-\d+秒)\s*\|\s*/;
 // 只匹配时间部分，不含大括号
@@ -55,6 +57,12 @@ export function tokenizePrompt(text: string, lookup: MentionLookup): Token[] {
     if (POSITION_RE.test(piece)) {
       const m = piece.match(POSITION_RE)!;
       tokens.push({ kind: "seedance_position", text: m[0] });
+      if (piece.length > m[0].length) pushMentionTokens(tokens, piece.slice(m[0].length), lookup);
+      continue;
+    }
+    if (TIMBRE_RE.test(piece)) {
+      const m = piece.match(TIMBRE_RE)!;
+      tokens.push({ kind: "seedance_timbre", text: m[0] });
       if (piece.length > m[0].length) pushMentionTokens(tokens, piece.slice(m[0].length), lookup);
       continue;
     }

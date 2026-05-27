@@ -174,7 +174,7 @@ def build_seedance_reference_prompt(
     for name, info in characters.items():
         tid = (info.get("timbre_id") or info.get("voice_style")) if isinstance(info, dict) else None
         if tid and (timbres or {}).get(tid):
-            timbre_bindings.append(f"{name} → {tid}")
+            timbre_bindings.append(f"{name} → @{tid}")
     bindings_block = ""
     if timbre_bindings:
         bindings_block = "\n角色音色绑定：\n" + "\n".join(f"- {b}" for b in timbre_bindings) + "\n（以上角色已有预设音色，【音色】行请使用绑定的音色名）\n"
