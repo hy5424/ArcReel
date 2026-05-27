@@ -28,7 +28,7 @@ interface CharacterCardProps {
   onRestoreVersion?: () => Promise<void> | void;
   onReload?: () => Promise<void> | void;
   generating?: boolean;
-  timbres?: Record<string, Record<string, unknown>>;
+  timbres?: Record<string, unknown>;
 }
 
 const FIELD_STYLE: React.CSSProperties = {
