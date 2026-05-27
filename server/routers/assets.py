@@ -72,6 +72,7 @@ async def _save_upload(file: UploadFile, asset_type: str, _t: Translator) -> str
         raise HTTPException(status_code=413, detail=_t("asset_upload_too_large"))
 
     root = get_project_manager().get_global_assets_root() / asset_type
+    await asyncio.to_thread(root.mkdir, parents=True, exist_ok=True)
     uid = uuid.uuid4().hex
     target = root / f"{uid}{ext}"
     await asyncio.to_thread(target.write_bytes, data)
