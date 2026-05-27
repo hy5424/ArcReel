@@ -263,6 +263,8 @@ class DreaminaVideoBackend:
 
         # ArcReel 内部 [图N] → dreamina 期望的 图片N
         prompt = re.sub(r"\[图(\d+)\]", r"图片\1", request.prompt)
+        # 去掉公共层追加的反向提示词（智能导演模式自带【禁止标签】，冲突）
+        prompt = re.sub(r"\s*禁止出现：BGM、文字字幕、水印。?$", "", prompt)
 
         # 构建 CLI 参数：--image 按顺序排列
         cmd_args = ["multimodal2video"]
