@@ -659,7 +659,7 @@ class API {
     if (audioFile) {
       const form = new FormData();
       form.append("file", audioFile);
-      const url = `${API_BASE}/projects/${encodeURIComponent(projectName)}/timbres/${encodeURIComponent(name)}/sheet`;
+      const url = `${API_BASE}/projects/${encodeURIComponent(projectName)}/timbres/${encodeURIComponent(name)}/audio`;
       await fetch(url, withAuth({ method: "POST", body: form }));
     }
     return result;

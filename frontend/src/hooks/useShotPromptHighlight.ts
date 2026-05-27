@@ -15,7 +15,7 @@ import { MENTION_RE, mentionNameFromMatch } from "@/utils/reference-mentions";
  * - text:           everything else
  */
 
-export type MentionLookup = Record<string, "character" | "scene" | "prop">;
+export type MentionLookup = Record<string, "character" | "scene" | "prop" | "timbre">;
 
 export type Token =
   | { kind: "text"; text: string }

@@ -143,8 +143,9 @@ export function ReferenceVideoCard({
     for (const name of Object.keys(project?.characters ?? {})) out[name] = "character";
     for (const name of Object.keys(project?.scenes ?? {})) out[name] = "scene";
     for (const name of Object.keys(project?.props ?? {})) out[name] = "prop";
+    for (const name of Object.keys(project?.timbres ?? {})) out[name] = "timbre";
     return out;
-  }, [project?.characters, project?.scenes, project?.props]);
+  }, [project?.characters, project?.scenes, project?.props, project?.timbres]);
 
   const tokens = useShotPromptHighlight(currentText, lookup);
 
