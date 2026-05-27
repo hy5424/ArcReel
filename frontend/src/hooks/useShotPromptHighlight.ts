@@ -29,7 +29,7 @@ export type Token =
 const SHOT_HEADER_RE = /^Shot\s+\d+\s*\(\s*\d+\s*s\s*\)\s*:\s*/i;
 const POSITION_RE = /^【站位】[：:]/;
 const FORBIDDEN_RE = /^【禁止标签】[：:]/;
-const TIMEBLOCK_RE = /^\{(\d+-\d+秒)\s*\|\s*/;
+const TIMEBLOCK_RE = /^\{+(\d+-\d+秒)\s*\|\s*/;
 const META_RE = /^无水印无字幕[，,]\s*/;
 
 export function tokenizePrompt(text: string, lookup: MentionLookup): Token[] {
