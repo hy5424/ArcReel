@@ -143,6 +143,7 @@ export function AssetLibraryPage() {
 
   const handleSubmit = async (payload: {
     name: string; description: string; voice_style: string; image?: File | null;
+    audio?: File | null;
   }) => {
     try {
       if (formModal?.mode === "edit" && formModal.asset) {
@@ -159,6 +160,7 @@ export function AssetLibraryPage() {
         const { asset } = await API.createAsset({
           type: activeTab, name: payload.name, description: payload.description,
           voice_style: payload.voice_style, image: payload.image ?? undefined,
+          audio: payload.audio ?? undefined,
         });
         addAsset(asset);
       }

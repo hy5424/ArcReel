@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, ImagePlus, Landmark, Package, User } from "lucide-react";
+import { AlertTriangle, ImagePlus, Landmark, Music, Package, User } from "lucide-react";
 import type { Asset, AssetType } from "@/types/asset";
 import { GlassModal } from "@/components/ui/GlassModal";
 import { ModalCloseButton } from "@/components/ui/ModalCloseButton";
@@ -31,6 +31,7 @@ const TYPE_ICON: Record<AssetType, React.ComponentType<{ className?: string }>> 
   character: User,
   scene: Landmark,
   prop: Package,
+  timbre: Music,
 };
 
 export function AssetFormModal({
@@ -41,6 +42,7 @@ export function AssetFormModal({
   const [description, setDescription] = useState(initialData?.description ?? "");
   const [voiceStyle, setVoiceStyle] = useState(initialData?.voice_style ?? "");
   const [image, setImage] = useState<File | null>(null);
+  const [audio, setAudio] = useState<File | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -67,6 +69,7 @@ export function AssetFormModal({
   const TypeIcon = TYPE_ICON[type];
 
   const isCharacter = type === "character";
+  const isTimbre = type === "timbre";
   const typeLabel = t(`type.${type}`);
   const title = mode === "create" ? t("create_title", { type: typeLabel })
     : mode === "edit" ? t("edit_title", { type: typeLabel, name: initialData?.name })
@@ -77,7 +80,7 @@ export function AssetFormModal({
   const submit = async (overwrite = false) => {
     setSubmitting(true);
     try {
-      await onSubmit({ name: name.trim(), description, voice_style: voiceStyle, image, overwrite });
+      await onSubmit({ name: name.trim(), description, voice_style: voiceStyle, image, audio, overwrite });
       onClose();
     } finally {
       setSubmitting(false);
@@ -218,9 +221,9 @@ export function AssetFormModal({
             <input
               ref={fileRef}
               type="file"
-              accept=".png,.jpg,.jpeg,.webp"
+              accept={isTimbre ? ".wav,.mp3" : ".png,.jpg,.jpeg,.webp"}
               className="hidden"
-              onChange={(e) => setImage(e.target.files?.[0] ?? null)}
+              onChange={(e) => isTimbre ? setAudio(e.target.files?.[0] ?? null) : setImage(e.target.files?.[0] ?? null)}
             />
           </div>
 
@@ -261,7 +264,7 @@ export function AssetFormModal({
               />
             </FieldLabel>
 
-            {isCharacter && (
+            {(isCharacter || isTimbre) && (
               <FieldLabel label={t("field.voice_style")}>
                 <input
                   value={voiceStyle}
