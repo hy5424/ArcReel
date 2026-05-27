@@ -153,8 +153,11 @@ class DreaminaVideoBackend:
     async def generate(self, request: VideoGenerationRequest) -> VideoGenerationResult:
         """提交 → 轮询 → 下载 一条龙。"""
 
-        # 1. 提交
-        if request.start_image is not None:
+        # 1. 提交 — 按参考图数量选模式
+        ref_images = [p for p in (request.reference_images or []) if p]
+        if ref_images:
+            submit_id = await self._submit_multimodal2video(request, ref_images)
+        elif request.start_image is not None:
             submit_id = await self._submit_image2video(request)
         else:
             submit_id = await self._submit_text2video(request)
@@ -251,6 +254,40 @@ class DreaminaVideoBackend:
             raise RuntimeError(f"无法提取 submit_id: {stdout[:300]}")
 
         logger.info("Dreamina image2video 已提交 submit_id=%s image=%s", submit_id, start_image)
+        return submit_id
+
+    async def _submit_multimodal2video(self, request: VideoGenerationRequest, ref_images: list[Path]) -> str:
+        """参考生视频模式：将参考图作为 --image 传给 multimodal2video。"""
+        duration = self._coerce_duration(request.duration_seconds)
+        ratio = request.aspect_ratio if request.aspect_ratio in _SUPPORTED_RATIOS else "9:16"
+
+        # ArcReel 内部 [图N] → dreamina 期望的 图片N
+        prompt = re.sub(r"\[图(\d+)\]", r"图片\1", request.prompt)
+
+        # 构建 CLI 参数：--image 按顺序排列
+        cmd_args = ["multimodal2video"]
+        for img in ref_images:
+            cmd_args.extend(["--image", str(img)])
+        cmd_args.extend([
+            "--prompt", prompt,
+            "--duration", str(duration),
+            "--ratio", ratio,
+            "--model_version", self._model,
+            "--poll", "0",
+        ])
+
+        rc, stdout, stderr = await _run_dreamina(*cmd_args)
+
+        if rc != 0:
+            error = (stderr or stdout)[:500]
+            raise RuntimeError(f"Dreamina multimodal2video 提交失败: {error}")
+
+        submit_id = _parse_submit_id(stdout) or _parse_submit_id(stderr)
+        if not submit_id:
+            raise RuntimeError(f"无法提取 submit_id: {stdout[:300]}")
+
+        logger.info("Dreamina multimodal2video 已提交 submit_id=%s images=%d",
+                     submit_id, len(ref_images))
         return submit_id
 
     # ── 轮询 / 下载 ───────────────────────────────────────────────────
