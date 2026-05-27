@@ -11,7 +11,7 @@ interface AssetsStore {
 }
 
 export const useAssetsStore = create<AssetsStore>((set) => ({
-  byType: { character: [], scene: [], prop: [] },
+  byType: { character: [], scene: [], prop: [], timbre: [] },
   loadList: async (type, q) => {
     const res = await API.listAssets({ type, q });
     set((s) => ({ byType: { ...s.byType, [type]: res.items } }));

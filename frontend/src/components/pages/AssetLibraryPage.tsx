@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useTranslation } from "react-i18next";
-import { ChevronLeft, Landmark, Package as PackageIcon, Plus, Search, User } from "lucide-react";
+import { ChevronLeft, Landmark, Mic, Package as PackageIcon, Plus, Search, User } from "lucide-react";
 import { AssetGrid } from "@/components/assets/AssetGrid";
 import { AssetFormModal } from "@/components/assets/AssetFormModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";

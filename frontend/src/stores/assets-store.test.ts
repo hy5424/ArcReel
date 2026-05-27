@@ -4,7 +4,7 @@ import { API } from "@/api";
 
 describe("useAssetsStore", () => {
   beforeEach(() => {
-    useAssetsStore.setState({ byType: { character: [], scene: [], prop: [] } });
+    useAssetsStore.setState({ byType: { character: [], scene: [], prop: [], timbre: [] } });
     vi.restoreAllMocks();
   });
 

@@ -7,9 +7,9 @@ export interface Asset {
   description: string;
   voice_style: string;
   image_path: string | null;
-  audio_file: string | null;
-  gender: string;
-  age_range: string;
+  audio_file?: string | null;
+  gender?: string;
+  age_range?: string;
   source_project: string | null;
   updated_at: string | null;
 }
