@@ -349,6 +349,16 @@ def build_seedance_narration_prompt(
     scene_names = list(scenes.keys())
     prop_names = list(props.keys())
 
+    # 角色-音色绑定提示
+    timbre_bindings = []
+    for name, info in characters.items():
+        tid = info.get("timbre_id") if isinstance(info, dict) else None
+        if tid:
+            timbre_bindings.append(f"{name} → {tid}")
+    bindings_block = ""
+    if timbre_bindings:
+        bindings_block = "\n角色音色绑定：\n" + "\n".join(f"- {b}" for b in timbre_bindings) + "\n（以上角色已有预设音色，【音色】行请使用绑定的音色名）\n"
+
     return f"""# 身份
 
 你是电影导演。你的工作：拿到剧本后脑海中看到这场戏，用镜头语言——角度、运动、光线、焦点、节奏——精确控制观众的情绪。
@@ -356,6 +366,8 @@ def build_seedance_narration_prompt(
 **核心信条**：两个镜头之间的关系比单个镜头自身的精美更重要。
 
 将每个片段转化为完整的即梦 Seedance 2.0 视频生成提示词，写入 video_prompt_override 字段。
+
+{bindings_block}
 
 **输出语言**：{target_language}。JSON 键名保持英文。
 
