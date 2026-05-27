@@ -1782,13 +1782,16 @@ class API {
     return this.request<{ asset: Asset }>(`/assets/${encodeURIComponent(id)}`);
   }
 
-  static async createAsset(payload: AssetCreatePayload & { image?: File }) {
+  static async createAsset(payload: AssetCreatePayload & { image?: File; audio?: File }) {
     const form = new FormData();
     form.append("type", payload.type);
     form.append("name", payload.name);
     form.append("description", payload.description ?? "");
     form.append("voice_style", payload.voice_style ?? "");
+    form.append("gender", payload.gender ?? "");
+    form.append("age_range", payload.age_range ?? "");
     if (payload.image) form.append("image", payload.image);
+    if (payload.audio) form.append("audio", payload.audio);
     const url = `${API_BASE}/assets`;
     const response = await fetch(url, withAuth({ method: "POST", body: form }));
     if (!response.ok) {

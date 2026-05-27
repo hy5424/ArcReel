@@ -33,7 +33,7 @@ def get_project_manager() -> ProjectManager:
 
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
-ALLOWED_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
+ALLOWED_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".wav", ".mp3"}
 
 _ILLEGAL_NAME_CHARS = ("/", "\\", "\0")
 
@@ -54,6 +54,9 @@ def _serialize(asset) -> dict:
         "description": asset.description,
         "voice_style": asset.voice_style,
         "image_path": asset.image_path,
+        "audio_file": asset.audio_file,
+        "gender": asset.gender,
+        "age_range": asset.age_range,
         "source_project": asset.source_project,
         "updated_at": asset.updated_at.isoformat() if asset.updated_at else None,
     }
@@ -119,6 +122,9 @@ async def create_asset(
     description: str = Form(""),
     voice_style: str = Form(""),
     image: UploadFile | None = File(None),
+    audio: UploadFile | None = File(None),
+    gender: str = Form(""),
+    age_range: str = Form(""),
 ):
     if type not in ASSET_TYPES:
         raise HTTPException(status_code=400, detail=_t("asset_invalid_type"))
@@ -126,8 +132,11 @@ async def create_asset(
 
     # 1) 先落盘再 create；IntegrityError 路径负责清理 orphan
     image_path: str | None = None
+    audio_file: str | None = None
     if image is not None and image.filename:
         image_path = await _save_upload(image, type, _t)
+    if audio is not None and audio.filename:
+        audio_file = await _save_upload(audio, type, _t)
 
     # 2) 真正 create；任何失败路径都必须清理已落盘文件，保证 DB/磁盘一致
     try:
@@ -140,6 +149,9 @@ async def create_asset(
                     description=description,
                     voice_style=voice_style,
                     image_path=image_path,
+                    audio_file=audio_file,
+                    gender=gender,
+                    age_range=age_range,
                     source_project=None,
                 )
                 await s.commit()
@@ -148,7 +160,27 @@ async def create_asset(
                 await s.rollback()
                 if image_path:
                     _delete_global_asset_file(image_path)
-                    image_path = None
+                if audio_file:
+                    _delete_global_asset_file(audio_file)
+                raise HTTPException(status_code=409, detail=_t("asset_already_exists", name=name))
+                await s.rollback()
+                if image_path:
+                    _delete_global_asset_file(image_path)
+                if audio_file:
+                    _delete_global_asset_file(audio_file)
+                raise HTTPException(status_code=409, detail=_t("asset_already_exists", name=name))
+                await s.rollback()
+                if image_path:
+                    _delete_global_asset_file(image_path)
+                if audio_file:
+                    _delete_global_asset_file(audio_file)
+                raise HTTPException(status_code=409, detail=_t("asset_already_exists", name=name))
+                await s.rollback()
+                if image_path:
+                    _delete_global_asset_file(image_path)
+                if audio_file:
+                    _delete_global_asset_file(audio_file)
+                raise HTTPException(status_code=409, detail=_t("asset_already_exists", name=name))
                 raise HTTPException(status_code=409, detail=_t("asset_already_exists", name=name))
     except HTTPException:
         raise
@@ -156,6 +188,7 @@ async def create_asset(
         # 其它错误路径也不留 orphan
         if image_path:
             _delete_global_asset_file(image_path)
+            _delete_global_asset_file(audio_file)
         raise
 
     return {"asset": _serialize(a)}
@@ -203,6 +236,8 @@ async def delete_asset(asset_id: str, _user: CurrentUser, _t: Translator):
         if a:
             if a.image_path:
                 _delete_global_asset_file(a.image_path)
+            if a.audio_file:
+                _delete_global_asset_file(a.audio_file)
             await repo.delete(asset_id)
             await s.commit()
     return None

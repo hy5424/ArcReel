@@ -1,4 +1,4 @@
-export type AssetType = "character" | "scene" | "prop";
+export type AssetType = "character" | "scene" | "prop" | "timbre";
 
 export interface Asset {
   id: string;
@@ -7,6 +7,9 @@ export interface Asset {
   description: string;
   voice_style: string;
   image_path: string | null;
+  audio_file: string | null;
+  gender: string;
+  age_range: string;
   source_project: string | null;
   updated_at: string | null;
 }
@@ -16,10 +19,14 @@ export interface AssetCreatePayload {
   name: string;
   description?: string;
   voice_style?: string;
+  gender?: string;
+  age_range?: string;
 }
 
 export interface AssetUpdatePayload {
   name?: string;
   description?: string;
   voice_style?: string;
+  gender?: string;
+  age_range?: string;
 }

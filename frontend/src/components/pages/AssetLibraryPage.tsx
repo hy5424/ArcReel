@@ -38,6 +38,7 @@ const TABS: TabDef[] = [
   { type: "character", icon: User },
   { type: "scene", icon: Landmark },
   { type: "prop", icon: PackageIcon },
+  { type: "timbre", icon: Mic },
 ];
 
 const EMPTY_KEY: Record<AssetType, string> = {
