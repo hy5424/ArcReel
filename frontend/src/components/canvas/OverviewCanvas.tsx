@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { RefreshCw, Sparkles, Users, Landmark, Package } from "lucide-react";
+import { Landmark, Music, Package, RefreshCw, Sparkles, Users } from "lucide-react";
 import type { ProjectData } from "@/types";
 import { API, ConflictError } from "@/api";
 import { useProjectsStore } from "@/stores/projects-store";
@@ -285,7 +285,7 @@ export function OverviewCanvas({ projectName, projectData }: OverviewCanvasProps
             {/* Asset progress — characters / scenes / props */}
             {status && (
               <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                {(["characters", "scenes", "props"] as const).map((key) => {
+                {(["characters", "scenes", "props", "timbres"] as const).map((key) => {
                   const cat = status[key] as
                     | { total: number; completed: number }
                     | undefined;
@@ -295,9 +295,10 @@ export function OverviewCanvas({ projectName, projectData }: OverviewCanvasProps
                     characters: t("characters"),
                     scenes: t("scenes"),
                     props: t("props"),
+                    timbres: "音色",
                   };
                   const Icon =
-                    key === "characters" ? Users : key === "scenes" ? Landmark : Package;
+                    key === "characters" ? Users : key === "scenes" ? Landmark : key === "props" ? Package : Music;
                   return (
                     <div
                       key={key}
@@ -435,7 +436,7 @@ export function OverviewCanvas({ projectName, projectData }: OverviewCanvasProps
                     rows={[
                       { label: t("storyboard"), value: formatCost(projectTotals.actual.image) },
                       { label: t("video"), value: formatCost(projectTotals.actual.video) },
-                      ...(["characters", "scenes", "props"] as const)
+                      ...(["characters", "scenes", "props", "timbres"] as const)
                         .map((kind) => {
                           const bucket = projectTotals.actual[kind];
                           if (bucket == null) return null;
