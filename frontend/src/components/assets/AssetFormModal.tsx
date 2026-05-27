@@ -23,6 +23,7 @@ interface Props {
     description: string;
     voice_style: string;
     image?: File | null;
+    audio?: File | null;
     overwrite?: boolean;
   }) => Promise<void>;
 }
