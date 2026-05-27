@@ -12,7 +12,7 @@ interface Props {
   onDelete: (asset: Asset) => void;
 }
 
-const TYPE_ICON = { character: UserIcon, scene: Landmark, prop: Package };
+const TYPE_ICON = { character: UserIcon, scene: Landmark, prop: Package, timbre: Music };
 
 const SHORT_DATE_OPTS: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
 
