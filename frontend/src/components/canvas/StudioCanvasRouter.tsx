@@ -12,6 +12,7 @@ import { SourceFilesPage } from "./SourceFilesPage";
 import { CharactersPage } from "./lorebook/CharactersPage";
 import { ScenesPage } from "./lorebook/ScenesPage";
 import { PropsPage } from "./lorebook/PropsPage";
+import { TimbresPage } from "./lorebook/TimbresPage";
 import { ReferenceVideoCanvas } from "./reference/ReferenceVideoCanvas";
 import { GridImageToVideoCanvas } from "./grid/GridImageToVideoCanvas";
 import { API } from "@/api";
@@ -374,6 +375,29 @@ export function StudioCanvasRouter() {
     }
   }, [currentProjectName, currentProjectData]);
 
+
+  const handleAddTimbreSubmit = useCallback(async (name: string, description: string, audioFile?: File) => {
+    if (!currentProjectName) return;
+    try {
+      await API.addProjectTimbre(currentProjectName, name, description, "", "", audioFile);
+      await refreshProject();
+      useAppStore.getState().pushToast("音色已添加", "success");
+    } catch (err) {
+      useAppStore.getState().pushToast(errMsg(err), "error");
+      throw err;
+    }
+  }, [currentProjectName, refreshProject]);
+
+  const handleUpdateTimbreSubmit = useCallback(async (name: string, updates: Record<string, unknown>) => {
+    if (!currentProjectName) return;
+    try {
+      await API.updateProjectTimbre(currentProjectName, name, updates);
+      await refreshProject();
+    } catch (err) {
+      useAppStore.getState().pushToast(errMsg(err), "error");
+      throw err;
+    }
+  }, [currentProjectName, refreshProject]);
   const handleAddPropSubmit = useCallback(async (name: string, description: string) => {
     if (!currentProjectName) return;
     try {
@@ -481,6 +505,16 @@ export function StudioCanvasRouter() {
           onRestorePropVersion={handleRestoreAsset}
           onRefreshProject={refreshProject}
           generatingPropNames={generatingPropNames}
+        />
+      </Route>
+
+      <Route path="/timbres">
+        <TimbresPage
+          projectName={currentProjectName}
+          timbres={currentProjectData?.timbres ?? {}}
+          onAddTimbre={handleAddTimbreSubmit}
+          onUpdateTimbre={handleUpdateTimbreSubmit}
+          onRefreshProject={refreshProject}
         />
       </Route>
 

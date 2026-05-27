@@ -647,6 +647,29 @@ class API {
     );
   }
 
+  // ==================== 音色管理 ====================
+
+  static async addProjectTimbre(projectName: string, name: string, description: string, gender?: string, ageRange?: string, audioFile?: File): Promise<SuccessResponse> {
+    const form = new FormData();
+    form.append("name", name);
+    form.append("description", description ?? "");
+    form.append("gender", gender ?? "");
+    form.append("age_range", ageRange ?? "");
+    if (audioFile) form.append("audio", audioFile);
+    const url = `${API_BASE}/projects/${encodeURIComponent(projectName)}/timbres`;
+    const response = await fetch(url, withAuth({ method: "POST", body: form }));
+    if (!response.ok) {
+      handleUnauthorized(response);
+      const error = (await response.json().catch(() => ({ detail: response.statusText }))) as { detail?: string };
+      throw new Error(typeof error.detail === "string" ? error.detail : "请求失败");
+    }
+    return response.json() as Promise<SuccessResponse>;
+  }
+
+  static async updateProjectTimbre(projectName: string, timbreName: string, updates: Record<string, unknown>): Promise<SuccessResponse> {
+    return this.request(`/projects/${encodeURIComponent(projectName)}/timbres/${encodeURIComponent(timbreName)}`, { method: "PATCH", body: JSON.stringify(updates) });
+  }
+
   // ==================== 场景管理 ====================
 
   static async getScript(
